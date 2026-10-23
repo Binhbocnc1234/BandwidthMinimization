@@ -6,7 +6,7 @@ Compare exact SAT, constraint programming (CP), and integer linear programming (
 
 ## Start Here
 
-Read [Task.md](Task.md) for the three-member allocation, mandatory scope, report ownership, and completion criteria. Nguyen Thanh Binh is the team leader and Member 3 (ILP).
+Read [Task.md](Task.md) for the three-member allocation, mandatory scope, report ownership, and completion criteria. Nguyen Thanh Binh is Member 3 (ILP).
 
 Read the [problem definition](docs/Problem.md) before building a model. Use the [experiment contract](docs/ExperimentContract.md) for shared input, output, and measurement rules. These documents define the team's implementation decisions; they do not claim that a solver or experiment has already been completed.
 

@@ -6,7 +6,7 @@ Summary: Responsibilities, delivery criteria, integration order, and report owne
 
 Implement exact BMP methods and compare their returned bandwidths, optimality certification, runtime, and memory use on the agreed [Harwell–Boeing dataset](data/HarwellBoeing/README.md).
 
-**Order encoding is mandatory. Both repeated SAT and incremental SAT are mandatory for order encoding. Pairwise encoding is allowed but optional.** Students may develop additional methods or improvements and compare them experimentally. Extensions supplement the required methods; they do not replace them. This scope reflects the clarification supplied by the team leader, rather than the original handout's pairwise requirement.
+**Order encoding is mandatory. Both repeated SAT and incremental SAT are mandatory for order encoding. Pairwise encoding is allowed but optional.** Students may develop additional methods or improvements and compare them experimentally. Extensions supplement the required methods; they do not replace them. This scope reflects the confirmed assignment clarification, rather than the original handout's pairwise requirement.
 
 Repeated and incremental SAT are solving schemes for SAT encodings, not requirements to duplicate the CP or ILP models. The required method variants are order/repeated, order/incremental, CP optimization, and ILP optimization. Running a model with another backend is a backend comparison, not another SAT scheme. An optional pairwise encoding may use incremental SAT alone; implementing both schemes for pairwise is optional.
 
@@ -16,9 +16,9 @@ The reference paper supplies the BMP definition and benchmark background. Reimpl
 
 | Member | Person | Main track | Shared responsibility |
 |---|---|---|---|
-| 1 | Name to be filled by the leader | SAT: order encoding; optional pairwise | SAT search, bounds, and SAT experiment artifacts |
-| 2 | Name to be filled by the leader | CP | Dataset loader and independent solution checker |
-| 3 | Nguyen Thanh Binh — leader | ILP | Experiment runner, integration, and final report assembly |
+| 1 | Name to be added | SAT: order encoding; optional pairwise | SAT search, bounds, and SAT experiment artifacts |
+| 2 | Name to be added | CP | Dataset loader and independent solution checker |
+| 3 | Nguyen Thanh Binh | ILP | Experiment runner, integration, and final report assembly |
 
 ## Member 1 — SAT
 
@@ -41,11 +41,11 @@ The reference paper supplies the BMP definition and benchmark background. Reimpl
 - Verify dataset checksums before experiments. Keep all algorithms on the same manifest and graph conversion.
 - The checker independently verifies the position permutation and recomputes bandwidth from the original graph. It checks feasible outputs from every method, including SAT and ILP.
 - Add workflow tests covering loading, solving, checking, and result export; include malformed inputs and rejection of invalid labelings.
-- Verify backend installation and license availability before the main experiment campaign. Report unavailable backends to the leader with evidence.
+- Verify backend installation and license availability before the main experiment campaign. Share unavailable backends and supporting evidence with the group.
 
 **Delivery:** runnable CP workflows, one shared loader and checker, passing relevant tests, provenance verification, and the CP/dataset report sections.
 
-## Member 3 — ILP and Team Leadership
+## Member 3 — ILP and Integration
 
 - Own `scripts/ilp/`: develop an ILP formulation with unique vertex positions and a bandwidth objective; explain the constraints and any linearization.
 - Implement IBM CPLEX MIP and Gurobi adapters for the same formulation. Check availability and licensing before the main campaign.
@@ -62,16 +62,16 @@ The reference paper supplies the BMP definition and benchmark background. Reimpl
 
 [ExperimentContract.md](docs/ExperimentContract.md) is the canonical contract. All members implement the same input interpretation, labeling representation, status meanings, timing boundaries, and experiment configuration. No member maintains a separate loader or a replacement solution checker.
 
-Implementations use Python 3.10 or newer. Each owner records the exact dependency versions after their backend smoke test; the leader freezes one compatible environment before the main campaign. Do not invent version pins before verifying that the selected backends run together.
+Implementations use Python 3.10 or newer. Each owner records the exact dependency versions after their backend smoke test; Member 3 freezes one compatible environment before the main campaign. Do not invent version pins before verifying that the selected backends run together.
 
-Commercial backend access is not assumed. A missing license or unusable backend is a documented blocker for that comparison, not permission to omit the method or claim a result. The leader resolves access or obtains an explicit scope clarification.
+Commercial backend access is not assumed. A missing license or unusable backend is a documented blocker for that comparison, not permission to omit the method or claim a result. Member 3 resolves access or obtains an explicit scope clarification.
 
 ## Integration Order
 
 1. Member 2 implements the loader and checker. Meanwhile, Members 1 and 3 develop their models against the shared contract.
-2. Each member integrates their backend and its workflow tests. The leader documents a real automated test entry point and change-based test selection before merging maintained tests.
-3. All members run the correctness gate in the experiment contract. The leader then runs smoke experiments and freezes the environment and configuration.
-4. The leader executes the main comparison campaign; each method owner investigates failures and reviews their own exported results.
+2. Each member integrates their backend and its workflow tests. Member 3 documents a real automated test entry point and change-based test selection before merging maintained tests.
+3. All members run the correctness gate in the experiment contract. Member 3 then runs smoke experiments and freezes the environment and configuration.
+4. Member 3 executes the main comparison campaign; each method owner investigates failures and reviews their own exported results.
 5. Add optional methods as separately named variants after the required workflows work. Regenerate affected comparisons through the shared runner.
 6. Each member writes their assigned report sections. All three review the final claims and contribution statement before submission.
 
@@ -99,4 +99,4 @@ The report uses the Elsevier `cas-sc` class, as required by the assignment, and 
 - Every claimed feasible labeling passes the shared checker. Every optimality claim has the evidence required by the experiment contract.
 - The experiment matrix, configurations, raw per-run results, logs, solution files, and environment records are available in the repository.
 - The report distinguishes proven optima, unproved feasible solutions, timeouts, errors, and unavailable backends. No solver performance results are fabricated or inferred from the paper.
-- The final paper links the source code and results in Data Availability. The leader resolves repository visibility or reviewer access before submission.
+- The final paper links the source code and results in Data Availability. Member 3 resolves repository visibility or reviewer access before submission.

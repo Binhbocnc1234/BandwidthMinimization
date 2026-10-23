@@ -2,7 +2,7 @@
 
 Summary: Shared graph input, solver result format, experiment conditions, and evidence required for the team's SAT, CP, and ILP comparison.
 
-These are team decisions authorized by the leader for implementation. They are not claims that experiments or verification have already run. Owners and completion criteria are in [Task.md](../Task.md).
+These are shared implementation decisions for the group. They are not claims that experiments or verification have already run. Owners and completion criteria are in [Task.md](../Task.md).
 
 ## Graph Input
 
@@ -80,7 +80,7 @@ No other benchmark run may overlap a measured run. Record unexpected competing l
 
 ## Result Artifacts
 
-The leader's runner writes `results/<experiment-id>/Config.json`, `Environment.json`, `DatasetManifest.json`, `Runs.jsonl`, `Solutions/`, and `Logs/`. The manifest is the exact dataset inventory used, not a URL to a changing file. Every attempt has a unique `run_id`; paths stored inside artifacts are relative to that experiment directory. Commit the records and referenced artifacts used by the paper.
+The shared experiment runner writes `results/<experiment-id>/Config.json`, `Environment.json`, `DatasetManifest.json`, `Runs.jsonl`, `Solutions/`, and `Logs/`. The manifest is the exact dataset inventory used, not a URL to a changing file. Every attempt has a unique `run_id`; paths stored inside artifacts are relative to that experiment directory. Commit the records and referenced artifacts used by the paper.
 
 Each JSON Lines record in `Runs.jsonl` contains the following fields. Use JSON `null` for unavailable measurements; do not use zero to mean missing.
 
