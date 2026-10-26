@@ -12,13 +12,22 @@ Repeated and incremental SAT are solving schemes for SAT encodings, not requirem
 
 The reference paper supplies the BMP definition and benchmark background. Reimplementing its simulated annealing algorithm is not required. The mathematical target is defined in [Problem.md](docs/Problem.md).
 
+## Allocation Criteria
+
+- Aim for comparable total mandatory effort, counting implementation, testing, experiments, shared infrastructure, writing, and presentation preparation. The number of assigned methods alone does not establish equal effort.
+- Assume each member performs their assigned tasks competently. Give each deliverable one primary owner and an explicit handoff.
+- Minimize duplicated knowledge: each member owns the detailed formulation, implementation, correctness argument, and presentation of their method. Everyone understands the BMP objective, dataset, result status meanings, experimental conditions, and main conclusions.
+- Member 3 defines and publishes the shared interface as a prerequisite for dependent implementation. Members 1 and 2 follow that specification; defining the interface does not require a three-person design decision.
+- After the prerequisites are available, each method owner can implement, test, and document their approach independently. Shared components have one implementation used by every method.
+- Balance the mandatory work separately from optional extensions. Reassess effort after the first working examples instead of assuming the allocation is equal by construction.
+
 ## Members
 
 | Member | Person | Main track | Shared responsibility |
 |---|---|---|---|
 | 1 | Name to be added | SAT: order encoding; optional pairwise | SAT search, bounds, and SAT experiment artifacts |
-| 2 | Name to be added | CP | Dataset loader and independent solution checker |
-| 3 | Nguyen Thanh Binh | ILP | Experiment runner, integration, and final report assembly |
+| 2 | Name to be added | CP | Report assembly, comparison tables and charts, and presentation assembly |
+| 3 | Nguyen Thanh Binh | ILP | Shared interface, loader/checker, experiment runner, and repository integration |
 
 ## Member 1 — SAT
 
@@ -33,34 +42,37 @@ The reference paper supplies the BMP definition and benchmark background. Reimpl
 
 **Delivery:** runnable SAT workflows, passing relevant tests, reproducible run artifacts, and the SAT method/results report sections.
 
-## Member 2 — CP and Shared Data Validation
+## Member 2 — CP and Report
 
 - Own `scripts/cp/`: formulate integer positions, an all-different constraint, and the maximum edge-distance objective.
 - Implement the CP model with OR-Tools CP-SAT and IBM CPLEX CP Optimizer adapters. Preserve the distinction between the model and the solver backend in the results.
-- Own the shared loader and checker in `scripts/shared/`. The loader reads the committed graph files, checks input validity, and retains all vertices.
-- Verify dataset checksums before experiments. Keep all algorithms on the same manifest and graph conversion.
-- The checker independently verifies the position permutation and recomputes bandwidth from the original graph. It checks feasible outputs from every method, including SAT and ILP.
-- Add workflow tests covering loading, solving, checking, and result export; include malformed inputs and rejection of invalid labelings.
+- Add CP workflow tests covering the real model, solving, extraction, shared checking, and result export.
 - Verify backend installation and license availability before the main experiment campaign. Share unavailable backends and supporting evidence with the group.
+- Own `report/`: assemble the method sections supplied by their owners, reconcile notation, maintain references, and prepare Data Availability using the repository and experiment artifacts supplied by Member 3.
+- Produce comparison tables and cnsplots charts from the checked results exported by Member 3. Have each method owner verify the interpretation of their results.
+- Assemble the presentation from each member's method material. Coordinate slide order and shared terminology without taking ownership of every method's technical explanation.
 
-**Delivery:** runnable CP workflows, one shared loader and checker, passing relevant tests, provenance verification, and the CP/dataset report sections.
+**Delivery:** runnable CP workflows, passing relevant tests, the CP report section, comparison tables/charts, the assembled report, and the assembled presentation.
 
 ## Member 3 — ILP and Integration
 
 - Own `scripts/ilp/`: develop an ILP formulation with unique vertex positions and a bandwidth objective; explain the constraints and any linearization.
 - Implement IBM CPLEX MIP and Gurobi adapters for the same formulation. Check availability and licensing before the main campaign.
 - Add workflow tests that exercise the real ILP formulation, solve, extraction, and shared checker on independently known cases.
+- Define and publish the shared graph structure, solver entry point, labeling/result format, status meanings, and timing contract before dependent implementation begins. Maintain the canonical specification and identify affected tasks when the interface changes.
+- Own the shared loader and checker in `scripts/shared/`. Validate graph inputs, retain all vertices, verify dataset checksums, independently check the position permutation, and recompute bandwidth for outputs from every method.
+- Add shared workflow tests for loading and checking, including malformed inputs and rejection of invalid labelings. Keep all methods on the same manifest and graph conversion.
 - Own the experiment runner in `tools/`. Apply the shared conditions, schedule methods sequentially, enforce deadlines, collect artifacts, and export comparable results.
 - Record the environment, exact solver and dependency versions, Git revision, experiment configuration, and dataset checksums.
 - Own integration into `main`. Review cross-method interface changes and check that the required comparison matrix is complete before accepting optional extensions.
-- Assemble the paper, reconcile notation and comparisons, maintain references, and prepare the repository link for Data Availability.
+- Supply Member 2 with checked experiment artifacts, environment/configuration records, dataset provenance, the repository link, and drafts of the ILP and experimental setup sections.
 - Coordinate member names, actual contributions, deadline planning, final review, and submission. No submission deadline is specified in this plan.
 
-**Delivery:** runnable ILP workflows, passing relevant tests, a reproducible experiment runner, integrated result artifacts, and the assembled report.
+**Delivery:** the shared interface specification, loader/checker, runnable ILP workflows, passing relevant tests, a reproducible experiment runner, checked result artifacts, and the ILP/experimental setup report sections.
 
 ## Shared Input, Output, and Conditions
 
-[ExperimentContract.md](docs/ExperimentContract.md) is the canonical contract. All members implement the same input interpretation, labeling representation, status meanings, timing boundaries, and experiment configuration. No member maintains a separate loader or a replacement solution checker.
+[ExperimentContract.md](docs/ExperimentContract.md) is the canonical contract maintained by Member 3. The published solver interface is a prerequisite for dependent implementation. All members implement the same input interpretation, labeling representation, status meanings, timing boundaries, and experiment configuration. Members 1 and 2 request clarification or changes from Member 3 rather than independently changing the contract. No member maintains a separate loader or a replacement solution checker.
 
 Implementations use Python 3.10 or newer. Each owner records the exact dependency versions after their backend smoke test; Member 3 freezes one compatible environment before the main campaign. Do not invent version pins before verifying that the selected backends run together.
 
@@ -68,12 +80,12 @@ Commercial backend access is not assumed. A missing license or unusable backend 
 
 ## Integration Order
 
-1. Member 2 implements the loader and checker. Meanwhile, Members 1 and 3 develop their models against the shared contract.
-2. Each member integrates their backend and its workflow tests. Member 3 documents a real automated test entry point and change-based test selection before merging maintained tests.
+1. Member 3 publishes the shared interface and implements the loader and checker. Meanwhile, Members 1 and 2 can develop mathematical formulations and read method-specific literature; dependent implementation starts when the interface and required shared components are available.
+2. Each member independently implements their backend and integrates its workflow tests against the shared contract. Member 3 documents a real automated test entry point and change-based test selection before merging maintained tests.
 3. All members run the correctness gate in the experiment contract. Member 3 then runs smoke experiments and freezes the environment and configuration.
 4. Member 3 executes the main comparison campaign; each method owner investigates failures and reviews their own exported results.
 5. Add optional methods as separately named variants after the required workflows work. Regenerate affected comparisons through the shared runner.
-6. Each member writes their assigned report sections. All three review the final claims and contribution statement before submission.
+6. Each member supplies their assigned report sections and presentation material to Member 2. Member 2 assembles the report and presentation. All three review the final claims and contribution statement before submission.
 
 ## Report Ownership
 
@@ -85,12 +97,17 @@ Commercial backend access is not assumed. A missing license or unusable backend 
 | CP formulation and backends | Member 2 | Member 3 |
 | ILP formulation and backends | Member 3 | Member 1 |
 | Experimental setup and reproducibility | Member 3 | Members 1 and 2 |
-| Method-specific results | Each method owner | Member 3 checks consistency |
-| Comparison tables and charts | Member 3 | All members check against raw records |
-| Discussion and limitations | All members | Member 3 integrates |
-| Introduction, abstract, conclusion, references, Data Availability | Member 3 | All members |
+| Method-specific results | Each method owner | Member 2 checks consistency |
+| Comparison tables and charts | Member 2 | All members check against raw records |
+| Discussion and limitations | All members | Member 2 integrates |
+| Introduction, abstract, conclusion, references, Data Availability | Member 2 | All members |
+| Final report assembly and formatting | Member 2 | Each method owner verifies their content |
 
 The report uses the Elsevier `cas-sc` class, as required by the assignment, and cnsplots for result charts. Write the abstract and conclusion after the results are checked. The contribution statement records work actually performed, not only this planned allocation. Cite the source paper, dataset, solver backends, and software versions. Describe actual AI assistance accurately if a disclosure is included or required.
+
+## Presentation Ownership
+
+Each member prepares and presents their own method, including its main idea, correctness argument, results, and limitations. Member 2 assembles the slides and comparison material; Member 3 supplies the experiment records and explains the execution conditions. Everyone can explain the shared problem, dataset, status meanings, and final conclusions. Detailed questions about an encoding, model, or backend go to its owner; no member needs to memorize all three implementations.
 
 ## Completion Criteria
 
