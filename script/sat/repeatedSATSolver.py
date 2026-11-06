@@ -1,3 +1,5 @@
+# TODO: sua lai ham xu li timeout
+
 import time
 from pysat.solvers import Solver
 
@@ -10,7 +12,8 @@ class RepeatedSATSolver:
     def __init__(   self, 
                     numVertices: int, 
                     edges: list[tuple[int, int]], 
-                    encodingType: str = "order"):
+                    encodingType: str = "order",
+                    verbose: bool = False):
 
         """
         Khởi tạo thuật toán giải SAT theo PP lặp lại.
@@ -18,11 +21,13 @@ class RepeatedSATSolver:
         numVertices: Số lượng đỉnh n
         edges: Danh sách cạnh (u, v)
         encodingType: "order" hoặc "pairwise"(default: "order")
+        verbose: Hiện thị log quá trình giải (default: False)
         """
 
         self.numVertices = numVertices
         self.edges = edges
         self.encodingType = encodingType
+        self.verbose = verbose
 
     def solve(self, initUB: int, timeLimit: float = 300.0) -> dict:
         """
@@ -77,8 +82,9 @@ class RepeatedSATSolver:
                     model = None
 
             # IN REAL-TIME NGAY KHI VỪA GIẢI XONG 1 UB
-            # resStr = "SAT" if isSat else "UNSAT"
-            # print(f"  -> Testing UB = {currUB:>3} | Result: {resStr:>5} | Time: {solverTime:6.4f}s | Clauses: {metadata['numClauses']}", flush=True)
+            if self.verbose:
+                resStr = "SAT" if isSat else "UNSAT"
+                print(f"  -> Testing UB = {currUB:>3} | Result: {resStr:>5} | Time: {solverTime:6.4f}s | Clauses: {metadata['numClauses']}", flush=True)
 
 
             trace.append({

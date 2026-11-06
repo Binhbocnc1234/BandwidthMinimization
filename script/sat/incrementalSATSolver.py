@@ -1,3 +1,5 @@
+# TODO: sua lai ham xu li timeout
+
 import time
 from pysat.solvers import Solver
 
@@ -10,7 +12,8 @@ class IncrementalSATSolver:
     def __init__(   self, 
                     numVertices: int, 
                     edges: list[tuple[int, int]], 
-                    encodingType: str = "order"):
+                    encodingType: str = "order",
+                    verbose: bool = False):
 
         """
         Khởi tạo thuật toán giải SAT theo PP Incremental SAT.
@@ -18,11 +21,13 @@ class IncrementalSATSolver:
         numVertices: Số lượng đỉnh n
         edges: Danh sách cạnh (u, v)
         encodingType: "order" hoặc "pairwise"(default: "order")
+        verbose: Hiện thị log quá trình giải (default: False)
         """
 
         self.numVertices = numVertices
         self.edges = edges
         self.encodingType = encodingType
+        self.verbose = verbose
 
     def getActivationVar(self, ub: int) -> int:
         """
@@ -60,22 +65,18 @@ class IncrementalSATSolver:
         maxVars = metadata["numVars"]
         maxClauses = len(baseClausesOnly)
 
-        if bestUB <= lb:
-            status = "OPTIMAL"
-        else:
-            status = "FEASIBLE"
-
+        status = "OPTIMAL" if bestUB <= lb else "FEASIBLE"
         currUB = initUB - 1
 
         with Solver(name="cadical153", bootstrap_with=baseClausesOnly) as solver:
             while currUB >= lb:
-
                 elapsedTime = time.time() - startTime
                 remainingTime = timeLimit - elapsedTime
 
-                if elapsedTime <= 0: 
+                if remainingTime <= 0: 
                     status = "FEASIBLE"
-                    print(f"  [Timeout] Đã vượt quá giới hạn thời gian {timeLimit}s!", flush=True)
+                    if self.verbose:
+                        print(f"  [Timeout] Đã vượt quá giới hạn thời gian {timeLimit}s!", flush=True)
                     break
 
                 activationLiteral = self.getActivationVar(currUB)
@@ -102,21 +103,25 @@ class IncrementalSATSolver:
                             solver.add_clause([-encoder.varX(u, k)] + validRangeV + [-activationLiteral])
                             solver.add_clause([-encoder.varX(v, k)] + validRangeU + [-activationLiteral])
 
-
                 solverStart = time.time()
                 isSat = solver.solve(assumptions=[activationLiteral])
                 solverTime = time.time() - solverStart
 
-                # IN REAL-TIME NGAY KHI VỪA GIẢI XONG 1 UB
-                # resStr = "SAT" if isSat else "UNSAT"
-                # print(f"  -> Testing UB = {currUB:>3} | Result: {resStr:>5} | Time: {solverTime:6.4f}s", flush=True)
+                if solverTime >= remainingTime or (time.time() - startTime) >= timeLimit:
+                    status = "FEASIBLE"
+                    if self.verbose:
+                        print(" ->[TIMEOUT]: CaDiCaL timeout tại UB = {currUB}", flush=True)
+                    break
+
+                if self.verbose:
+                    resStr = "SAT" if isSat else "UNSAT"
+                    print(f"  -> Testing UB = {currUB:>3} | Result: {resStr:>5} | Time: {solverTime:6.4f}s", flush=True)
 
                 trace.append({
                     "ub"        : currUB,
                     "isSat"     : isSat,
                     "solveTime" : solverTime
                 })
-
 
                 if isSat:
                     model = solver.get_model()
