@@ -82,8 +82,10 @@ def solveBMPSAT(
     filePath: Đường dẫn đến file .col.
     encodingType: "order" hoặc "pairwise" (default: "order").
     solverType: "incremental" hoặc "repeated" (default: "incremental").
-    timeLimit: (default: 300.0s)
+    timeLimit: (default: 300.0s). Covers model construction and every bound; a child process is killed at the deadline.
     verbose: In thông tin log ra console (default: False).
+
+    The calling program needs an `if __name__ == "__main__":` guard. See deadlineRunner.runSearchWithDeadline.
         
     Trả về Dictionary chuẩn:
         {
@@ -99,7 +101,9 @@ def solveBMPSAT(
             "totalTime": float,        # Tổng thời gian giải (seconds)
             "maxVars": int,            # Số lượng biến SAT lớn nhất
             "maxClauses": int,         # Số lượng mệnh đề CNF lớn nhất
-            "trace": list[dict]        # Lịch sử các bước thử nghiệm UB
+            "trace": list[dict],       # Lịch sử các bước thử nghiệm UB; isSat = None is a bound interrupted at the deadline
+            "terminationReason": str,  # "completed" / "time_limit"
+            "deadlineOvershootSeconds": float  # max(0, totalTime - timeLimit)
         }
     """
 
@@ -163,7 +167,9 @@ def solveBMPSAT(
         "totalTime": result["totalTime"],
         "maxVars": result["maxVars"],
         "maxClauses": result["maxClauses"],
-        "trace": result["trace"]
+        "trace": result["trace"],
+        "terminationReason": result["terminationReason"],
+        "deadlineOvershootSeconds": result["deadlineOvershootSeconds"]
     }
 
     if verbose:

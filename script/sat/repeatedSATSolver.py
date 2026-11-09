@@ -1,8 +1,7 @@
-# TODO: sua lai ham xu li timeout
-
 import time
 from pysat.solvers import Solver
 
+from deadlineRunner import SearchReporter, runSearchWithDeadline
 from orderEncoding import OrderEncoder
 from pairwiseEncoding import PairwiseEncoder
 
@@ -39,28 +38,19 @@ class RepeatedSATSolver:
         timeLimit: Giới hạn thời gian giải (default: 300s)
         """
 
-        # KHỞI TẠO THUẬT TOÁN
-        startTime = time.time()
+        return runSearchWithDeadline(self.searchBounds, self.numVertices, len(self.edges), initUB, timeLimit, self.verbose)
 
-        bestLabeling = [i + 1 for i in range(self.numVertices)]
-        bestUB = initUB
-        lb = 1 if len(self.edges) > 0 else 0
+    def searchBounds(self, initUB: int, lb: int, reporter: SearchReporter) -> None:
+        """
+        Test decreasing bounds, in the child process of deadlineRunner, which owns the deadline.
 
-        if bestUB <= lb: 
-            status = "OPTIMAL"
-        else: 
-            status = "FEASIBLE"
+        reporter: Sends each bound's result to the parent as soon as it exists.
+        """
 
         currUB = initUB - 1
-        trace = []
-        maxVars = 0
-        maxClauses = 0
 
         while currUB >= lb:
-            elapsedTime = time.time() - startTime
-            if elapsedTime >= timeLimit: 
-                status = "FEASIBLE"
-                break
+            reporter.boundStarted(currUB)
 
             if self.encodingType == "order":
                 encoder = OrderEncoder(self.numVertices, self.edges)
@@ -68,8 +58,7 @@ class RepeatedSATSolver:
                 encoder = PairwiseEncoder(self.numVertices, self.edges)
 
             clauses, metadata = encoder.encode(currUB)
-            maxVars = max(maxVars, metadata["numVars"])
-            maxClauses = max(maxClauses, metadata["numClauses"])
+            reporter.modelSize(metadata["numVars"], metadata["numClauses"])
 
             with Solver(name="cadical153", bootstrap_with=clauses) as solver:
                 solverStart = time.time()
@@ -87,38 +76,25 @@ class RepeatedSATSolver:
                 print(f"  -> Testing UB = {currUB:>3} | Result: {resStr:>5} | Time: {solverTime:6.4f}s | Clauses: {metadata['numClauses']}", flush=True)
 
 
-            trace.append({
+            traceEntry = {
                 "ub": currUB,
                 "isSat": isSat,
                 "numClauses": metadata["numClauses"],
                 "solveTime": solverTime
-            })
+            }
 
             if isSat and model is not None:
                 if self.encodingType == "order":
-                    bestLabeling = decodeOrderEncoding(model, self.numVertices)
+                    labeling = decodeOrderEncoding(model, self.numVertices)
                 else:
-                    bestLabeling = decodePairwiseEncoding(model, self.numVertices)
+                    labeling = decodePairwiseEncoding(model, self.numVertices)
 
-                bestUB = currUB
+                reporter.boundFinished(traceEntry, labeling)
                 currUB -= 1
 
             else:
-                status = "OPTIMAL"
+                reporter.boundFinished(traceEntry, None)
                 break
-        
-
-        totalTime = time.time() - startTime
-
-        return {
-            "status"        : status,
-            "bestUB"        : bestUB,
-            "labeling"      : bestLabeling,
-            "totalTime"     : totalTime,
-            "maxVars"       : maxVars,
-            "maxClauses"    : maxClauses,
-            "trace"         : trace
-        }
 
 
 

@@ -52,4 +52,6 @@ Run `git fetch --all --prune` before reading or merging these branches. Why: a b
 
 ## Project Rules
 
+A program that calls `solveBMPSAT` MUST run it under an `if __name__ == "__main__":` guard. Why: [deadlineRunner.py](script/sat/deadlineRunner.py) runs the SAT search in a child process so it can kill it at the deadline, and starting that child imports the main script again.
+
 `README.md` is a copy of this file. MUST NOT edit `README.md` directly. After changing this file, run `cp AGENTS.md README.md` and commit both files together. Why: developer decision on 2026-11-09, so that teammates reading the repository page and agents reading this file see the same content.

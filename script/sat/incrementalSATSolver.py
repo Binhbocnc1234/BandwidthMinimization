@@ -1,8 +1,7 @@
-# TODO: sua lai ham xu li timeout
-
 import time
 from pysat.solvers import Solver
 
+from deadlineRunner import SearchReporter, runSearchWithDeadline
 from orderEncoding import OrderEncoder
 from pairwiseEncoding import PairwiseEncoder
 
@@ -47,12 +46,17 @@ class IncrementalSATSolver:
         timeLimit: Giới hạn thời gian giải (default: 300s)
         """
 
-        # KHỞI TẠO THUẬT TOÁN
-        startTime = time.time()
+        return runSearchWithDeadline(self.searchBounds, self.numVertices, len(self.edges), initUB, timeLimit, self.verbose)
 
-        bestLabeling = [i + 1 for i in range(self.numVertices)]
-        bestUB = initUB
-        lb = 1 if len(self.edges) > 0 else 0
+    def searchBounds(self, initUB: int, lb: int, reporter: SearchReporter) -> None:
+        """
+        Test decreasing bounds on one solver, in the child process of deadlineRunner, which owns the deadline.
+
+        reporter: Sends each bound's result to the parent as soon as it exists.
+        """
+
+        # An interruption while the base model is built is recorded against the first bound.
+        reporter.boundStarted(initUB - 1)
 
         if self.encodingType == "order":
             encoder = OrderEncoder(self.numVertices, self.edges)
@@ -61,26 +65,16 @@ class IncrementalSATSolver:
             encoder = PairwiseEncoder(self.numVertices, self.edges)
             baseClausesOnly, metadata = encoder.encode(ub=self.numVertices, includeEdgeConstraints=False)
 
-        trace = []
-        maxVars = metadata["numVars"]
-        maxClauses = len(baseClausesOnly)
+        reporter.modelSize(metadata["numVars"], len(baseClausesOnly))
 
-        status = "OPTIMAL" if bestUB <= lb else "FEASIBLE"
         currUB = initUB - 1
 
         with Solver(name="cadical153", bootstrap_with=baseClausesOnly) as solver:
             while currUB >= lb:
-                elapsedTime = time.time() - startTime
-                remainingTime = timeLimit - elapsedTime
-
-                if remainingTime <= 0: 
-                    status = "FEASIBLE"
-                    if self.verbose:
-                        print(f"  [Timeout] Đã vượt quá giới hạn thời gian {timeLimit}s!", flush=True)
-                    break
+                reporter.boundStarted(currUB)
 
                 activationLiteral = self.getActivationVar(currUB)
-                maxVars = max(maxVars, activationLiteral)
+                reporter.modelSize(activationLiteral, 0)
 
                 if self.encodingType == "order":
                     for u, v in self.edges:
@@ -107,44 +101,26 @@ class IncrementalSATSolver:
                 isSat = solver.solve(assumptions=[activationLiteral])
                 solverTime = time.time() - solverStart
 
-                if solverTime >= remainingTime or (time.time() - startTime) >= timeLimit:
-                    status = "FEASIBLE"
-                    if self.verbose:
-                        print(" ->[TIMEOUT]: CaDiCaL timeout tại UB = {currUB}", flush=True)
-                    break
-
                 if self.verbose:
                     resStr = "SAT" if isSat else "UNSAT"
                     print(f"  -> Testing UB = {currUB:>3} | Result: {resStr:>5} | Time: {solverTime:6.4f}s", flush=True)
 
-                trace.append({
+                traceEntry = {
                     "ub"        : currUB,
                     "isSat"     : isSat,
                     "solveTime" : solverTime
-                })
+                }
 
                 if isSat:
                     model = solver.get_model()
                     if self.encodingType == "order":
-                        bestLabeling = decodeOrderEncoding(model, self.numVertices)
+                        labeling = decodeOrderEncoding(model, self.numVertices)
                     else:
-                        bestLabeling = decodePairwiseEncoding(model, self.numVertices)
+                        labeling = decodePairwiseEncoding(model, self.numVertices)
 
-                    bestUB = currUB
+                    reporter.boundFinished(traceEntry, labeling)
                     currUB -= 1
 
                 else:
-                    status = "OPTIMAL"
+                    reporter.boundFinished(traceEntry, None)
                     break
-
-        totalTime = time.time() - startTime
-
-        return {
-            "status"        : status,
-            "bestUB"        : bestUB,
-            "labeling"      : bestLabeling,
-            "totalTime"     : totalTime,
-            "maxVars"       : maxVars,
-            "maxClauses"    : maxClauses,
-            "trace"         : trace
-        }
