@@ -57,7 +57,7 @@ Use `sat_pairwise_incremental` for the optional pairwise extension; a separate `
 
 | Setting | Main comparison decision |
 |---|---|
-| Instance set | All 12 instances in the committed manifest; identify this as the initial subset, not the full paper benchmark |
+| Instance set | All 12 instances in the committed manifest; identify this as the initial subset, not the full paper benchmark. The SAT methods skip `bcspwr05`, `bcsstk20`, and `sherman1`, for the memory reason below |
 | Machine | One recorded machine and OS for the complete comparison campaign |
 | Concurrency | One active experiment; one solver worker/thread per run |
 | Time budget | 300 seconds per instance, method, and repetition for model construction plus optimization |
@@ -68,7 +68,9 @@ Use `sat_pairwise_incremental` for the optional pairwise extension; a separate `
 | Backend settings | One thread, the assigned seed, and declared time settings; record every other nondefault option |
 | Preparation | Freeze the Git commit, dataset/configuration hashes, exact dependencies, and solver versions before the campaign |
 
-These limits bound experiment cost; they are not a claim that a method solves any instance within the budget. The six required variants give 216 runs, with at most 18 hours of budgeted model construction and optimization. Setup, validation, and cleanup add time outside that estimate. The 12-instance subset limits conclusions about the full collection.
+These limits bound experiment cost; they are not a claim that a method solves any instance within the budget. The six required variants give 198 runs (12 instances for CP and ILP, 9 for SAT), with at most 16.5 hours of budgeted model construction and optimization. Setup, validation, and cleanup add time outside that estimate. The 12-instance subset limits conclusions about the full collection.
+
+The SAT order encoding has n * n(n-1)/2 all-different clauses, so its memory grows with the cube of the vertex count. On 2026-11-11, `bcspwr04` (274 vertices, 10.3 million clauses) reached a peak resident memory of 5.4–5.7 GiB in its SAT search process within 60 seconds, for both repeated and incremental solving, under a 6 GiB address-space cap that stopped the incremental run with `std::bad_alloc`. Scaled by clause count, the skipped graphs need about 23 GiB (`bcspwr05`, 443 vertices), 31 GiB (`bcsstk20`, 485 vertices), and 270 GiB (`sherman1`, 1,000 vertices), while the developer's laptop has 15 GiB of RAM. Running them would end in an out-of-memory crash, not in a SAT result, and could make the OS kill other programs. Record each skipped SAT instance in `Config.json` with this reason; it is neither a run nor a timeout. A smaller encoding of the all-different constraint would change this decision.
 
 Before the campaign, smoke-test `ibm32`, `bcspwr01`, and `bcsstk01` once per backend with a 10-second budget. These runs verify integration and record failures; exclude them from the main performance comparison. A smoke timeout alone does not imply an integration error.
 
