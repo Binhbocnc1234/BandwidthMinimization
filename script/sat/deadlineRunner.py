@@ -3,7 +3,11 @@
 The whole search of a run lives in one child process, and the parent kills that process at the deadline. CaDiCaL through PySAT offers no way to stop a running solve from the same process: `Cadical153.interrupt()` raises NotImplementedError, and a solve holds the GIL, so a watchdog thread cannot run either. Cutting a solve into conflict-budget slices changes the search (ibm32 at bound 12 took 6.3 s as one call and was unsolved after 25 s in slices) and cannot stop clause construction. One process per run, rather than per bound, keeps the single persistent solver that incremental solving needs.
 """
 
+import ctypes
 import multiprocessing
+import os
+import signal
+import sys
 import time
 import traceback
 from multiprocessing.connection import Connection
@@ -45,7 +49,15 @@ class SearchReporter:
 SearchFunction = Callable[[int, int, SearchReporter], None]
 
 
+_PR_SET_DUMPABLE: int = 4
+
+
 def _runChild(search: SearchFunction, initUB: int, lb: int, sender: Connection) -> None:
+    if sys.platform == "linux":
+        # A crash dump keeps a crashed process, and its pipe, open: on Ubuntu, the crash reporter held an aborted child for about 1.7 s, so a crash just before the deadline looked like a timeout. A process that is not dumpable dies at once.
+        if ctypes.CDLL(None, use_errno=True).prctl(_PR_SET_DUMPABLE, 0, 0, 0, 0) != 0:
+            errorNumber: int = ctypes.get_errno()
+            raise OSError(errorNumber, f"prctl(PR_SET_DUMPABLE, 0) failed: {os.strerror(errorNumber)}")
     reporter: SearchReporter = SearchReporter(sender)
     # Sent after this process has finished importing, so the budget excludes process startup and imports, as docs/ExperimentContract.md requires.
     reporter._send("ready")
@@ -143,6 +155,13 @@ def runSearchWithDeadline(
             child.kill()
             child.join()
             receiver.close()
+
+        # A child that crashed after the deadline but before the kill has an exit code other than the kill's.
+        killExitCode: int = -signal.SIGTERM if sys.platform == "win32" else -signal.SIGKILL
+        if terminationReason == "time_limit" and child.exitcode != killExitCode:
+            raise RuntimeError(
+                f"SAT child process ended by itself near the deadline: exit code {child.exitcode} while testing bound {currentBound}. A negative code is the signal that ended it; -6 is an abort, such as std::bad_alloc when memory runs out."
+            )
 
     # Stopped after the kill completes, so the overshoot includes the time the OS takes to end the child.
     totalTime: float = time.monotonic() - startTime
