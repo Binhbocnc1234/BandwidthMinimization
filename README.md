@@ -41,9 +41,9 @@ The `python3 -m venv` route fails on this laptop, because the `python3.12-venv` 
 
 Gurobi reads its license from the file named by `GRB_LICENSE_FILE`, for example `export GRB_LICENSE_FILE=~/Documents/CacVanDeHienDaiCuaKHMT/Exercises/gurobi.lic`. Without it, the Gurobi tests are skipped. Git ignores `*.lic`; never commit a license file.
 
-The installed `cplex` package is the free Community Edition, limited to 1,000 variables and 1,000 constraints. The ILP tests fit, but every committed instance exceeds the limit, so `ilp_cplex` needs the full CPLEX for the campaign.
+The `cplex` package from PyPI is the free Community Edition, limited to 1,000 variables and 1,000 constraints, and every committed instance exceeds the limit. IBM ILOG CPLEX Optimization Studio 22.2 (free for students through the IBM Academic Initiative) removes the limit, but it ships no Python package. After installing Studio, run `.venv/bin/docplex config --upgrade <Studio folder>`: it copies the unlimited CPLEX library and the `cpoptimizer` program into the venv. Run it again after every reinstall of the `cplex` package.
 
-The CP tests skip the IBM CP Optimizer cases when the `cpoptimizer` program is missing. Set `CPO_EXECUTABLE` to its path, and `REQUIRE_CPO=1` to turn the skip into a failure. The SAT code has no automated tests yet.
+The CP tests skip the IBM CP Optimizer cases when the `cpoptimizer` program is missing. Set `CPO_EXECUTABLE` to `<Studio folder>/cpoptimizer/bin/x86-64_linux/cpoptimizer`, and `REQUIRE_CPO=1` to turn the skip into a failure. The SAT code has no automated tests yet.
 
 ## Dataset
 
