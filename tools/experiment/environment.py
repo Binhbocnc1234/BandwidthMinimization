@@ -64,7 +64,7 @@ def describeEnvironment(repositoryRoot: Path, cpoExecutable: str | None) -> dict
         "git_tracked_changes": dirty,
         "solver_settings": "one thread and the run's seed for every backend that takes one; CPLEX and Gurobi use a zero MIP gap. The exact parameters are in scripts/cp/cpSolver.py and scripts/ilp/ilpSolver.py at git_commit.",
         "timing": "time.perf_counter inside each method, started after input loading and the checksum check; elapsed time of a killed attempt is time.monotonic from the solve call to the kill",
-        "memory": "peak_rss_mib is ru_maxrss from wait4 on the worker process: the largest resident set of the worker or of any descendant it waited for, not a sum, and it includes native solver memory",
+        "memory": "peak_rss_mib with peak_rss_scope 'worker' is the larger of the worker's own VmHWM and its RUSAGE_CHILDREN ru_maxrss: the largest resident set of the worker or of a child it waited for, not a sum, including native solver memory. Scope 'sampled' (a killed or crashed worker) is the largest VmHWM among the worker's live process group, sampled every 0.5 s",
     }
 
 

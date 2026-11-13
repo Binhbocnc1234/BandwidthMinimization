@@ -9,6 +9,7 @@ Files of the attempt, relative to the experiment folder (the runner owns their n
 
 import json
 import os
+import resource
 import sys
 import time
 import traceback
@@ -41,6 +42,14 @@ def writeJsonAtomically(path: Path, value: object) -> None:
     os.replace(temporaryPath, path)
 
 
+def readPeakRssKiB(pid: int | str) -> int:
+    """VmHWM, the peak resident set of the process's current memory map. Unlike ru_maxrss, it starts at zero at exec: on 2026-11-13, a 9.5 MB child of a 300 MB parent had ru_maxrss 311 MiB from wait4, because Linux carries the parent's size into ru_maxrss across exec."""
+    for line in Path(f"/proc/{pid}/status").read_text(encoding="utf-8").splitlines():
+        if line.startswith("VmHWM:"):
+            return int(line.split()[1])
+    raise RuntimeError(f"/proc/{pid}/status has no VmHWM line")
+
+
 def runAttempt(spec: dict) -> None:
     paths: dict[str, Path] = attemptPaths(Path(spec["experimentDir"]), spec["runId"])
     instance: ManifestInstance = ManifestInstance(
@@ -70,8 +79,10 @@ def runAttempt(spec: dict) -> None:
     progress["solveCalledAtMonotonic"] = time.monotonic()
     writeJsonAtomically(paths["progress"], progress)
     result: dict = METHODS[spec["method"]](request)
+    # Children such as the SAT search process start at this worker's size through ru_maxrss, which this worker's own peak already covers, so the larger value is the peak of the worker and its waited-for children.
+    peakKiB: int = max(readPeakRssKiB("self"), resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss)
     writeJsonAtomically(paths["trace"], result.pop("trace"))
-    writeJsonAtomically(paths["result"], {"initialUpperBound": initUB, **result})
+    writeJsonAtomically(paths["result"], {"initialUpperBound": initUB, "peakRssMiB": peakKiB / 1024, **result})
 
 
 def main() -> None:

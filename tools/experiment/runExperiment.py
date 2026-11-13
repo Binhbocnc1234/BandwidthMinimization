@@ -20,7 +20,7 @@ from scripts.shared.graphInput import ManifestInstance, loadManifestInstance, re
 from scripts.shared.labeling import checkLabeling, commonLowerBound
 from tools.experiment.environment import backendInventory, describeEnvironment, gitRevision
 from tools.experiment.methods import METHOD_IDS, REPOSITORY_ROOT, SAT_METHOD_IDS
-from tools.experiment.worker import attemptPaths, writeJsonAtomically
+from tools.experiment.worker import attemptPaths, readPeakRssKiB, writeJsonAtomically
 
 SCHEMA_VERSION: int = 1
 DEFAULT_MANIFEST: Path = REPOSITORY_ROOT / "data" / "HarwellBoeing" / "Manifest.json"
@@ -29,10 +29,30 @@ SAT_SKIPPED_INSTANCES: dict[str, str] = {
     for name in ["bcspwr05", "bcsstk20", "sherman1"]
 }
 POLL_INTERVAL_SECONDS: float = 0.05
+MEMORY_SAMPLE_EVERY_POLLS: int = 10
+
+
+def sampleGroupPeakRssKiB(processGroup: int) -> int:
+    """The largest VmHWM among the live processes of a process group."""
+    peakKiB: int = 0
+    for entry in Path("/proc").iterdir():
+        if not entry.name.isdigit():
+            continue
+        try:
+            # The command name in field 2 may contain spaces, so fields are counted after its closing parenthesis: state, parent pid, process group.
+            if int((entry / "stat").read_text(encoding="utf-8").rsplit(")", 1)[1].split()[2]) == processGroup:
+                peakKiB = max(peakKiB, readPeakRssKiB(entry.name))
+        except FileNotFoundError:
+            # The process ended between the listing and the read.
+            continue
+    return peakKiB
 
 
 def runAttempt(experimentDir: Path, spec: dict, killAfterSeconds: float) -> tuple[int, float, bool, float]:
-    """Run one worker; kill its whole process group after killAfterSeconds. Returns (wait status, peak RSS in MiB, killed, kill time on time.monotonic)."""
+    """Run one worker; kill its whole process group after killAfterSeconds. Returns (exit code, sampled peak RSS in MiB, killed, kill time on time.monotonic).
+
+    The sampled peak covers the live processes of the group every MEMORY_SAMPLE_EVERY_POLLS polls, so it can miss the last half second and short-lived children. It is used only when the worker reports no peak of its own.
+    """
     paths: dict[str, Path] = attemptPaths(experimentDir, spec["runId"])
     writeJsonAtomically(paths["spec"], spec)
     with open(paths["log"], "w", encoding="utf-8") as logStream:
@@ -43,29 +63,30 @@ def runAttempt(experimentDir: Path, spec: dict, killAfterSeconds: float) -> tupl
         killAt: float = time.monotonic() + killAfterSeconds
         killed: bool = False
         killTime: float = 0.0
+        sampledPeakKiB: int = 0
+        polls: int = 0
         while True:
             if time.monotonic() >= killAt:
+                sampledPeakKiB = max(sampledPeakKiB, sampleGroupPeakRssKiB(worker.pid))
                 os.killpg(worker.pid, signal.SIGKILL)
                 killed, killTime = True, time.monotonic()
-                _, waitStatus, usage = os.wait4(worker.pid, 0)
+                worker.wait()
                 break
-            # wait4 is called directly instead of Popen.wait, because only wait4 returns the worker's resource usage.
-            pid, waitStatus, usage = os.wait4(worker.pid, os.WNOHANG)
-            if pid != 0:
+            if worker.poll() is not None:
                 break
+            if polls % MEMORY_SAMPLE_EVERY_POLLS == 0:
+                sampledPeakKiB = max(sampledPeakKiB, sampleGroupPeakRssKiB(worker.pid))
+            polls += 1
             time.sleep(POLL_INTERVAL_SECONDS)
-        # Popen must not wait for a pid that wait4 already reaped.
-        worker.returncode = os.waitstatus_to_exitcode(waitStatus)
         try:
             # Ends descendants that outlived a worker that exited by itself.
             os.killpg(worker.pid, signal.SIGKILL)
         except ProcessLookupError:
             pass
-    # Linux reports ru_maxrss in KiB.
-    return waitStatus, usage.ru_maxrss / 1024, killed, killTime
+    return worker.returncode, sampledPeakKiB / 1024, killed, killTime
 
 
-def buildRecord(experimentDir: Path, spec: dict, graph: tuple[int, list], waitStatus: int, peakRssMiB: float, killed: bool, killTime: float) -> dict:
+def buildRecord(experimentDir: Path, spec: dict, graph: tuple[int, list], exitCode: int, sampledPeakRssMiB: float, killed: bool, killTime: float) -> dict:
     paths: dict[str, Path] = attemptPaths(experimentDir, spec["runId"])
     numVertices, edges = graph
     result: dict = json.loads(paths["result"].read_text(encoding="utf-8")) if paths["result"].is_file() else {}
@@ -78,11 +99,12 @@ def buildRecord(experimentDir: Path, spec: dict, graph: tuple[int, list], waitSt
         "time_limit_seconds": spec["timeLimitSeconds"], "termination_reason": result.get("terminationReason"), "status": result.get("status"),
         "bandwidth": result.get("bandwidth"), "lower_bound": result.get("lowerBound"), "initial_upper_bound": result.get("initialUpperBound"), "incumbent_origin": result.get("incumbentOrigin"),
         "elapsed_seconds": result.get("elapsedSeconds"), "construction_seconds": result.get("constructionSeconds"), "search_seconds": result.get("searchSeconds"), "validation_seconds": None,
-        "peak_rss_mib": round(peakRssMiB, 1), "variables": result.get("variables"), "constraints": result.get("constraints"), "clauses": result.get("clauses"),
+        "peak_rss_mib": round(result.get("peakRssMiB", sampledPeakRssMiB), 1), "peak_rss_scope": "worker" if "peakRssMiB" in result else "sampled",
+        "variables": result.get("variables"), "constraints": result.get("constraints"), "clauses": result.get("clauses"),
         "labeling_file": None, "trace_file": paths["trace"].relative_to(experimentDir).as_posix() if paths["trace"].is_file() else None,
         "log_file": paths["log"].relative_to(experimentDir).as_posix(), "error": result.get("error"),
         "deadline_overshoot_seconds": result.get("deadlineOvershootSeconds"), "native_status": result.get("nativeStatus"),
-        "hint_submitted": result.get("hintSubmitted"), "hint_accepted": result.get("hintAccepted"), "worker_exit_code": os.waitstatus_to_exitcode(waitStatus),
+        "hint_submitted": result.get("hintSubmitted"), "hint_accepted": result.get("hintAccepted"), "worker_exit_code": exitCode,
     }
     if paths["solverLog"].is_file():
         record["solver_log_file"] = paths["solverLog"].relative_to(experimentDir).as_posix()
@@ -195,8 +217,8 @@ def main() -> None:
                     "instance": instance.name, "graphPath": str(instance.graphPath), "graphSha256": instance.graphSha256, "numVertices": instance.numVertices, "numEdges": instance.numEdges,
                     "method": method, "repetition": repetition, "seed": repetition - 1, "timeLimitSeconds": arguments.time_limit, "cpoExecutable": cpoExecutable, "gitCommit": gitCommit,
                 }
-                waitStatus, peakRssMiB, killed, killTime = runAttempt(experimentDir, spec, arguments.time_limit + arguments.grace)
-                record: dict = buildRecord(experimentDir, spec, graph, waitStatus, peakRssMiB, killed, killTime)
+                exitCode, sampledPeakRssMiB, killed, killTime = runAttempt(experimentDir, spec, arguments.time_limit + arguments.grace)
+                record: dict = buildRecord(experimentDir, spec, graph, exitCode, sampledPeakRssMiB, killed, killTime)
                 with open(runsFile, "a", encoding="utf-8") as stream:
                     stream.write(json.dumps(record) + "\n")
                     stream.flush()
