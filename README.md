@@ -16,8 +16,11 @@ Modern Issues in Computer Science, major assignment 2 (BTL 2). The project compa
 | Download the dataset and rebuild the graphs | [tools/prepare_dataset.py](tools/prepare_dataset.py) |
 | SAT solvers: order and pairwise encodings, repeated and incremental solving | [scripts/sat/](scripts/sat/), entry point `solveBMPSAT` in [SATSolverWrapper.py](scripts/sat/SATSolverWrapper.py) |
 | CP solvers: OR-Tools CP-SAT and IBM CP Optimizer | [scripts/cp/](scripts/cp/), entry point [runCP.py](scripts/cp/runCP.py) |
+| ILP solvers: one formulation on IBM CPLEX and Gurobi | [scripts/ilp/](scripts/ilp/), entry point `ILPSolver` in [ilpSolver.py](scripts/ilp/ilpSolver.py); formulation and correctness argument in [docs/ILPModel.md](docs/ILPModel.md) |
+| Load a `.col` graph, verify it against the manifest, check a labeling | [scripts/shared/](scripts/shared/): [graphInput.py](scripts/shared/graphInput.py) and [labeling.py](scripts/shared/labeling.py). Every method uses these; none keeps its own loader or checker |
+| Brute-force oracle and the correctness-gate graphs for any method's tests | [tests/oracle.py](tests/oracle.py) |
 
-The ILP code, the shared loader and checker, `tests/`, `results/`, and `report/` do not exist yet. Session scratch files belong in ignored `tmp/`.
+The experiment runner, `results/`, and `report/` do not exist yet. Session scratch files belong in ignored `tmp/`.
 
 ## Commands
 
@@ -25,13 +28,20 @@ Python 3.10 or newer is required. Run every command from the repository root. So
 
 | Task | Command |
 |---|---|
-| Install the solver and test dependencies | `pip install pytest python-sat ortools docplex` |
+| Create the environment and install the solver and test dependencies | `uv venv .venv && uv pip install --python .venv/bin/python pytest python-sat ortools docplex cplex gurobipy` |
+| Run the shared and ILP workflow tests, required after a change under `scripts/shared/`, `scripts/ilp/` or `tests/` | `.venv/bin/python -m pytest tests` |
 | Download the dataset again, without third-party packages | `python tools/prepare_dataset.py` |
 | Solve one graph with CP | `python scripts/cp/runCP.py data/HarwellBoeing/graphs/ibm32.col --time-limit 10 --output tmp/cp-ibm32` |
 | Check which CP backends are available | `python -m scripts.cp.checkSolvers --output tmp/cp-backends.json` |
 | Run the CP workflow tests, required after a change under `scripts/cp/` | `python -m pytest scripts/cp/test_cp_workflow.py` |
 
 `tools/prepare_dataset.py` updates retrieval timestamps and checksums, so preserve the committed manifest for an experiment before refreshing the data.
+
+The `python3 -m venv` route fails on this laptop, because the `python3.12-venv` system package is not installed; `uv` needs no system package.
+
+Gurobi reads its license from the file named by `GRB_LICENSE_FILE`, for example `export GRB_LICENSE_FILE=~/Documents/CacVanDeHienDaiCuaKHMT/Exercises/gurobi.lic`. Without it, the Gurobi tests are skipped. Git ignores `*.lic`; never commit a license file.
+
+The installed `cplex` package is the free Community Edition, limited to 1,000 variables and 1,000 constraints. The ILP tests fit, but every committed instance exceeds the limit, so `ilp_cplex` needs the full CPLEX for the campaign.
 
 The CP tests skip the IBM CP Optimizer cases when the `cpoptimizer` program is missing. Set `CPO_EXECUTABLE` to its path, and `REQUIRE_CPO=1` to turn the skip into a failure. The SAT code has no automated tests yet.
 
