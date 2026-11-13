@@ -4,10 +4,10 @@ import os
 from pathlib import Path
 import random
 import pytest
-from script.cp.checkSolvers import checkSolver
-from script.cp.cpSolver import CPSolver
-from script.cp.runCP import exportResult, loadCommittedGraph
-from script.cp.teamBridge import parseColFile, verifyLabeling
+from scripts.cp.checkSolvers import checkSolver
+from scripts.cp.cpSolver import CPSolver
+from scripts.cp.runCP import exportResult, loadCommittedGraph
+from scripts.cp.teamBridge import parseColFile, verifyLabeling
 
 
 def bruteForceOptimum(numVertices, edges):

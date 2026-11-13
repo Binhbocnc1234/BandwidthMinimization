@@ -14,10 +14,10 @@ Modern Issues in Computer Science, major assignment 2 (BTL 2). The project compa
 | Dataset attribution and limitations | [data/HarwellBoeing/README.md](data/HarwellBoeing/README.md) |
 | Exact dataset files, source URLs, and checksums | [data/HarwellBoeing/Manifest.json](data/HarwellBoeing/Manifest.json) |
 | Download the dataset and rebuild the graphs | [tools/prepare_dataset.py](tools/prepare_dataset.py) |
-| SAT solvers: order and pairwise encodings, repeated and incremental solving | [script/sat/](script/sat/), entry point `solveBMPSAT` in [SATSolverWrapper.py](script/sat/SATSolverWrapper.py) |
-| CP solvers: OR-Tools CP-SAT and IBM CP Optimizer | [script/cp/](script/cp/), entry point [runCP.py](script/cp/runCP.py) |
+| SAT solvers: order and pairwise encodings, repeated and incremental solving | [scripts/sat/](scripts/sat/), entry point `solveBMPSAT` in [SATSolverWrapper.py](scripts/sat/SATSolverWrapper.py) |
+| CP solvers: OR-Tools CP-SAT and IBM CP Optimizer | [scripts/cp/](scripts/cp/), entry point [runCP.py](scripts/cp/runCP.py) |
 
-[Task.md](Task.md) assigns `scripts/sat/`, `scripts/cp/`, `scripts/ilp/`, and `scripts/shared/`, but the SAT and CP code is committed under `script/`. The ILP code, the shared loader and checker, `tests/`, `results/`, and `report/` do not exist yet. Session scratch files belong in ignored `tmp/`.
+The ILP code, the shared loader and checker, `tests/`, `results/`, and `report/` do not exist yet. Session scratch files belong in ignored `tmp/`.
 
 ## Commands
 
@@ -27,9 +27,9 @@ Python 3.10 or newer is required. Run every command from the repository root. So
 |---|---|
 | Install the solver and test dependencies | `pip install pytest python-sat ortools docplex` |
 | Download the dataset again, without third-party packages | `python tools/prepare_dataset.py` |
-| Solve one graph with CP | `python script/cp/runCP.py data/HarwellBoeing/graphs/ibm32.col --time-limit 10 --output tmp/cp-ibm32` |
-| Check which CP backends are available | `python -m script.cp.checkSolvers --output tmp/cp-backends.json` |
-| Run the CP workflow tests, required after a change under `script/cp/` | `python -m pytest script/cp/test_cp_workflow.py` |
+| Solve one graph with CP | `python scripts/cp/runCP.py data/HarwellBoeing/graphs/ibm32.col --time-limit 10 --output tmp/cp-ibm32` |
+| Check which CP backends are available | `python -m scripts.cp.checkSolvers --output tmp/cp-backends.json` |
+| Run the CP workflow tests, required after a change under `scripts/cp/` | `python -m pytest scripts/cp/test_cp_workflow.py` |
 
 `tools/prepare_dataset.py` updates retrieval timestamps and checksums, so preserve the committed manifest for an experiment before refreshing the data.
 
@@ -45,13 +45,13 @@ Teammates push their work to branches that are not named `main`. The owners belo
 
 | Branch | Owner | Work |
 |---|---|---|
-| `SAT_main` | Trần Tuấn Cường | SAT, under `script/sat/` |
-| `CP` | Cao Thế Mạnh | CP, under `script/cp/` |
+| `SAT_main` | Trần Tuấn Cường | SAT, under `scripts/sat/` |
+| `CP` | Cao Thế Mạnh | CP, under `scripts/cp/` |
 
 Run `git fetch --all --prune` before reading or merging these branches. Why: a branch on GitHub is invisible locally until it is fetched. On 2026-11-09, `CP` was missing from the local branch list until the fetch.
 
 ## Project Rules
 
-A program that calls `solveBMPSAT` MUST run it under an `if __name__ == "__main__":` guard. Why: [deadlineRunner.py](script/sat/deadlineRunner.py) runs the SAT search in a child process so it can kill it at the deadline, and starting that child imports the main script again.
+A program that calls `solveBMPSAT` MUST run it under an `if __name__ == "__main__":` guard. Why: [deadlineRunner.py](scripts/sat/deadlineRunner.py) runs the SAT search in a child process so it can kill it at the deadline, and starting that child imports the main script again.
 
 `README.md` is a copy of this file. MUST NOT edit `README.md` directly. After changing this file, run `cp AGENTS.md README.md` and commit both files together. Why: developer decision on 2026-11-09, so that teammates reading the repository page and agents reading this file see the same content.
