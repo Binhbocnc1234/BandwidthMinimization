@@ -145,7 +145,7 @@ def exportResult(result, outputDirectory, inputPath, numVertices, edges, timeLim
         "model_count_scope": result["modelCountScope"],
         "error": None,
         "deadline_overshoot_seconds": result["deadlineOvershoot"],
-        "checker": "SATSolverWrapper.verifyLabeling",
+        "checker": "scripts.shared.labeling.checkLabeling",
     }
 
     writeJson(outputDirectory / "result.json", record)
