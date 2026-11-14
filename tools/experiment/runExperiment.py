@@ -30,6 +30,9 @@ SAT_SKIPPED_INSTANCES: dict[str, str] = {
 }
 POLL_INTERVAL_SECONDS: float = 0.05
 MEMORY_SAMPLE_EVERY_POLLS: int = 10
+# Used when the variable is not exported, so a forgotten export cannot drop a method from the campaign. `docplex config --upgrade` puts cpoptimizer next to the venv's python; the group keeps the Gurobi license in the course workspace that holds this repository.
+DEFAULT_CPO_EXECUTABLE: Path = Path(sys.executable).parent / "cpoptimizer"
+DEFAULT_GUROBI_LICENSE_FILE: Path = REPOSITORY_ROOT.parent / "Exercises" / "gurobi.lic"
 
 
 def sampleGroupPeakRssKiB(processGroup: int) -> int:
@@ -164,7 +167,10 @@ def main() -> None:
     gitCommit, trackedChanges = gitRevision(REPOSITORY_ROOT)
     if trackedChanges and not arguments.allow_tracked_changes:
         sys.exit("tracked files differ from the commit; commit them, or pass --allow-tracked-changes for a run that is not part of the comparison")
-    cpoExecutable: str | None = os.environ.get("CPO_EXECUTABLE")
+    if "GRB_LICENSE_FILE" not in os.environ and DEFAULT_GUROBI_LICENSE_FILE.is_file():
+        # Set before the backend probe; the workers inherit it.
+        os.environ["GRB_LICENSE_FILE"] = str(DEFAULT_GUROBI_LICENSE_FILE)
+    cpoExecutable: str | None = os.environ.get("CPO_EXECUTABLE", str(DEFAULT_CPO_EXECUTABLE) if DEFAULT_CPO_EXECUTABLE.is_file() else None)
     manifest: list[ManifestInstance] = readManifest(arguments.manifest)
     if arguments.instances:
         unknown: set[str] = set(arguments.instances) - {instance.name for instance in manifest}
