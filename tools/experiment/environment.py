@@ -88,7 +88,14 @@ def _probe(method: str, cpoExecutable: str | None) -> None:
     elif method == "ilp_gurobi":
         import gurobipy
 
-        gurobipy.Env(params={"OutputFlag": 0}).dispose()
+        # 2,001 variables pass only a full license: creating an Env also succeeds on the size-limited license that ships with the pip package, which refuses more than 2,000.
+        with gurobipy.Env(params={"OutputFlag": 0}) as environment, gurobipy.Model(name="sizeProbe", env=environment) as model:
+            variables = model.addVars(2001, vtype=gurobipy.GRB.BINARY)
+            model.addConstr(variables.sum() >= 1)
+            model.setObjective(variables.sum())
+            model.optimize()
+            if model.Status != gurobipy.GRB.OPTIMAL:
+                raise RuntimeError(f"Gurobi size probe ended with status {model.Status}")
     elif method == "ilp_cplex":
         from docplex.mp.model import Model
 
