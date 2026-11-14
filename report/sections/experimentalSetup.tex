@@ -58,7 +58,7 @@ Table~\ref{tab:setup-methods} lists the six compared configurations: four model 
 
 \subsection{Machine and Run Conditions}\label{sec:setup-conditions}
 
-All runs execute on one laptop with an Intel Core i5-13450HX processor (10 physical and 16 logical cores) and 15{,}698~MiB of RAM, under Ubuntu 24.04.5 LTS with Linux 6.8.0. Only one run executes at a time, and every backend uses one thread.
+All runs of the main campaign execute on one laptop with an Intel Core i5-13450HX processor (10 physical and 16 logical cores) and 15{,}698~MiB of RAM, under Ubuntu 24.04.5 LTS with Linux 6.8.0. Only one run executes at a time, and every backend uses one thread.
 
 Each method runs three times on each instance, with repetition $r \in \{1, 2, 3\}$ using seed $r - 1$ on every backend that accepts a seed. CaDiCaL accepts no seed through PySAT, so its seed is recorded as unavailable. Instances run in manifest order and repetitions in ascending order, and the method order of repetition $r$ is the order of Table~\ref{tab:setup-methods} rotated left by $r - 1$, so no method always runs first.
 
