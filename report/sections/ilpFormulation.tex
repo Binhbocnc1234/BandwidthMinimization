@@ -1,8 +1,8 @@
 % Owner: Member 3 (Nguyen Thanh Binh). Reviewer: Member 1 (Task.md, Report Ownership).
 % Canonical description of the ILP model that scripts/ilp/ilpModel.py builds for both ilp_cplex and ilp_gurobi.
-% Uses only packages that the cas-sc class loads. Notation follows the problem definition: G = (V, E), n = |V|, m = |E|, labeling f, bandwidth B(f).
+% Formatting follows the SAT draft of 2026-11-14 (report/main.tex): Title Case headings. Notation follows the problem definition: G = (V, E), n = |V|, m = |E|, labeling f, bandwidth B(f).
 
-\section{Integer linear programming formulation}\label{sec:ilp}
+\section{Integer Linear Programming Formulation}\label{sec:ilp}
 
 The ILP method minimizes the bandwidth directly. One formulation is built once and solved by two backends, IBM CPLEX and Gurobi, so that the two ILP rows of the comparison differ only in the solver.
 
@@ -29,7 +29,7 @@ The optimum of \eqref{eq:ilp-objective}--\eqref{eq:ilp-domains} equals the minim
 \end{enumerate}
 The variables $p_v$ need not be declared integer, because \eqref{eq:ilp-link} makes them integers whenever $x$ is integral. A backend returns $x$ integral only up to its integrality tolerance, so every $p_v$ of a returned solution is rounded to the nearest integer. The resulting labeling is then checked by the shared checker, which verifies that it is a permutation and recomputes its bandwidth. A rounded vector that fails this check ends the run with status \texttt{ERROR}; it is never reported as a solution.
 
-\subsection{Backends and optimality evidence}\label{sec:ilp-backends}
+\subsection{Backends and Optimality Evidence}\label{sec:ilp-backends}
 
 Both backends receive the same model, one thread, the run's random seed, a relative and an absolute MIP gap of zero, and the remaining time budget of the run. The identity labeling $f_0$ is supplied as the MIP start. Every new incumbent that a backend reports during the search is rounded, checked, and saved at once, so a run stopped at its deadline keeps its best checked labeling.
 

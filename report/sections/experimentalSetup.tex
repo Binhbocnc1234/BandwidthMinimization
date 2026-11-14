@@ -1,19 +1,22 @@
 % Owner: Member 3 (Nguyen Thanh Binh). Reviewers: Members 1 and 2 (Task.md, Report Ownership).
 % The rules described here are owned by docs/ExperimentContract.md and implemented by tools/experiment/; this section reports them for readers of the paper.
+% Formatting follows the SAT draft of 2026-11-14 (report/main.tex): Title Case headings, plain tabular tables with bold headers.
 % Text in \textbf{[...]} marks a value that exists only after the main campaign has run; replace it from results/<experiment-id>/ and never estimate it.
 
-\section{Experimental setup}\label{sec:setup}
+\section{Experimental Setup}\label{sec:setup}
 
 \subsection{Instances}\label{sec:setup-instances}
 
 The experiments use 12 graphs from the Harwell--Boeing collection, listed in Table~\ref{tab:setup-instances}. % Member 2: add a \ref to the dataset provenance section here.
 They are an initial subset of the 113 instances used in the reference paper, so the results do not support conclusions about the full collection. Every vertex is kept, including isolated vertices. Before each run, the input file is compared with the SHA-256 checksum recorded in the dataset manifest, and a mismatch stops the experiment.
 
-\begin{table}[width=.9\linewidth,cols=5,pos=h]
-\caption{Instances. $UB_0$ is the bandwidth of the identity labeling, which every method starts from. The SAT methods skip three instances, for the memory reason given in Section~\ref{sec:setup-conditions}.}\label{tab:setup-instances}
-\begin{tabular*}{\tblwidth}{@{} LRRRL @{}}
+\begin{table}[h]
+\caption{Instances. $UB_0$ is the bandwidth of the identity labeling, which every method starts from. The SAT methods skip three instances, for the memory reason given in Section~\ref{sec:setup-conditions}.}
+\label{tab:setup-instances}
+\centering
+\begin{tabular}{lrrrl}
 \toprule
-Instance & $n$ & $m$ & $UB_0$ & SAT runs \\
+\textbf{Instance} & $\boldsymbol{n}$ & $\boldsymbol{m}$ & $\boldsymbol{UB_0}$ & \textbf{SAT Runs} \\
 \midrule
 ibm32 & 32 & 90 & 26 & yes \\
 bcspwr01 & 39 & 46 & 38 & yes \\
@@ -28,18 +31,20 @@ bcspwr05 & 443 & 590 & 435 & skipped \\
 bcsstk20 & 485 & 1325 & 20 & skipped \\
 sherman1 & 1000 & 1375 & 100 & skipped \\
 \bottomrule
-\end{tabular*}
+\end{tabular}
 \end{table}
 
-\subsection{Methods and software}\label{sec:setup-methods}
+\subsection{Methods and Software}\label{sec:setup-methods}
 
 Table~\ref{tab:setup-methods} lists the six compared configurations: four model or solving-scheme variants, two of which run on two backends each. Every backend runs in the environment pinned in the repository's \texttt{requirements.txt}, with Python~3.12.3.
 
-\begin{table}[width=.9\linewidth,cols=3,pos=h]
-\caption{Compared methods and the backend versions used.}\label{tab:setup-methods}
-\begin{tabular*}{\tblwidth}{@{} L >{\raggedright\arraybackslash}p{.29\linewidth} >{\raggedright\arraybackslash}p{.33\linewidth} @{}}
+\begin{table}[h]
+\caption{Compared methods and the backend versions used.}
+\label{tab:setup-methods}
+\centering
+\begin{tabular}{l>{\raggedright\arraybackslash}p{.29\linewidth}>{\raggedright\arraybackslash}p{.33\linewidth}}
 \toprule
-Method & Model and solving scheme & Backend \\
+\textbf{Method} & \textbf{Model and Solving Scheme} & \textbf{Backend} \\
 \midrule
 \texttt{sat\_order\_repeated} & Order encoding, new solver for each bound & CaDiCaL 1.5.3~\cite{cadical} through PySAT 1.9.dev22~\cite{pysat} \\
 \texttt{sat\_order\_incremental} & Order encoding, one solver for all bounds & The same CaDiCaL build \\
@@ -48,10 +53,10 @@ Method & Model and solving scheme & Backend \\
 \texttt{ilp\_cplex} & ILP formulation (Section~\ref{sec:ilp}) & IBM CPLEX 22.2.0.0~\cite{cplex} \\
 \texttt{ilp\_gurobi} & The same ILP formulation & Gurobi 14.0.0~\cite{gurobi} \\
 \bottomrule
-\end{tabular*}
+\end{tabular}
 \end{table}
 
-\subsection{Machine and run conditions}\label{sec:setup-conditions}
+\subsection{Machine and Run Conditions}\label{sec:setup-conditions}
 
 All runs execute on one laptop with an Intel Core i5-13450HX processor (10 physical and 16 logical cores) and 15{,}698~MiB of RAM, under Ubuntu 24.04.5 LTS with Linux 6.8.0. Only one run executes at a time, and every backend uses one thread.
 
@@ -61,7 +66,7 @@ Every run has a budget of 300~seconds for model construction and optimization to
 
 The SAT order encoding has $n \cdot n(n-1)/2$ clauses for the all-different constraint, so its memory grows with $n^3$. On bcspwr04 (274 vertices, 10.3 million clauses), the SAT search reached a peak of 5.4--5.7~GiB within 60~seconds. Scaled by clause count, bcspwr05, bcsstk20 and sherman1 would need about 23, 31 and 270~GiB, more than the machine's RAM, so the SAT methods skip them. These skips are not runs and not timeouts. In total, the campaign has 198 runs (12 instances for the CP and ILP methods and 9 for the SAT methods, three repetitions each), with at most 16.5 hours of budgeted solving time.
 
-\subsection{Result status and checking}\label{sec:setup-status}
+\subsection{Result Status and Checking}\label{sec:setup-status}
 
 Every labeling that a method returns or saves during its search is checked by one shared checker, independent of all solver models. The checker confirms that the labeling is a permutation of $\{1, \ldots, n\}$ and recomputes its bandwidth, which must equal the bandwidth the method claims. Every method starts from the identity labeling $f_0$, with upper bound $UB_0$ and the common lower bound $LB$ (1 for a graph with an edge). Each run ends with one of four statuses:
 \begin{itemize}
