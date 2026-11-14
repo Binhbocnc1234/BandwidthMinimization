@@ -19,6 +19,7 @@ Modern Issues in Computer Science, major assignment 2 (BTL 2). The project compa
 | ILP solvers: one formulation on IBM CPLEX and Gurobi | [scripts/ilp/](scripts/ilp/), entry point `ILPSolver` in [ilpSolver.py](scripts/ilp/ilpSolver.py); formulation and correctness argument in [docs/ILPModel.md](docs/ILPModel.md) |
 | Load a `.col` graph, verify it against the manifest, check a labeling | [scripts/shared/](scripts/shared/): [graphInput.py](scripts/shared/graphInput.py) and [labeling.py](scripts/shared/labeling.py). Every method uses these; none keeps its own loader or checker |
 | Brute-force oracle and the correctness-gate graphs for any method's tests | [tests/oracle.py](tests/oracle.py) |
+| Which workflow tests a change selects | [tools/testSelection.json](tools/testSelection.json), read by [tools/selectTests.py](tools/selectTests.py). A path that no rule maps selects the full suite |
 | Run experiments: one fresh worker process per attempt, deadline kill, peak memory, and the `results/<experiment-id>/` files of the contract | [tools/experiment/](tools/experiment/), entry point [runExperiment.py](tools/experiment/runExperiment.py); the six method IDs map to solver calls in [methods.py](tools/experiment/methods.py) |
 
 `results/` and `report/` do not exist yet. Session scratch files belong in ignored `tmp/`.
@@ -30,13 +31,14 @@ Python 3.10 or newer is required. Run every command from the repository root. So
 | Task | Command |
 |---|---|
 | Create the environment and install the solver and test dependencies | `uv venv .venv && uv pip install --python .venv/bin/python pytest python-sat ortools docplex cplex gurobipy` |
-| Run the shared, ILP and runner workflow tests, required after a change under `scripts/shared/`, `scripts/ilp/`, `tools/experiment/` or `tests/` | `.venv/bin/python -m pytest tests` |
+| Run the tests that the committed changes select, in a clean checkout of `HEAD`; required after the last commit of a request. When the request made several commits, add `--base <commit before the first one>` | `.venv/bin/python tools/selectTests.py` |
+| Run every workflow test, required before merging into `main` and before a campaign | `.venv/bin/python -m pytest tests scripts/cp/test_cp_workflow.py` |
 | Run the smoke experiment (3 instances, 10 s, once per method); set `GRB_LICENSE_FILE` and `CPO_EXECUTABLE` first, or those methods are recorded UNAVAILABLE | `.venv/bin/python -m tools.experiment.runExperiment --experiment-id smoke-<date> --instances ibm32 bcspwr01 bcsstk01 --repetitions 1 --time-limit 10` |
 | Run the main campaign (198 attempts, up to 16.5 hours plus overhead); add `--resume` to continue it after an interruption | `.venv/bin/python -m tools.experiment.runExperiment --experiment-id <id>` |
 | Download the dataset again, without third-party packages | `python tools/prepare_dataset.py` |
 | Solve one graph with CP | `python scripts/cp/runCP.py data/HarwellBoeing/graphs/ibm32.col --time-limit 10 --output tmp/cp-ibm32` |
 | Check which CP backends are available | `python -m scripts.cp.checkSolvers --output tmp/cp-backends.json` |
-| Run the CP workflow tests, required after a change under `scripts/cp/` | `python -m pytest scripts/cp/test_cp_workflow.py` |
+| Run only the CP workflow tests | `python -m pytest scripts/cp/test_cp_workflow.py` |
 
 `tools/prepare_dataset.py` updates retrieval timestamps and checksums, so preserve the committed manifest for an experiment before refreshing the data.
 

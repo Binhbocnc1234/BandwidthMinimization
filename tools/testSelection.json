@@ -1,0 +1,24 @@
+{
+  "full_suite": ["tests", "scripts/cp/test_cp_workflow.py"],
+  "full_suite_paths": [
+    "pytest.ini",
+    "requirements.txt",
+    "tools/selectTests.py",
+    "tools/testSelection.json",
+    "tests/__init__.py",
+    "tests/oracle.py",
+    "scripts/shared/**"
+  ],
+  "no_check": [
+    "**/*.md",
+    "docs/**",
+    "report/**",
+    ".gitignore"
+  ],
+  "checks": [
+    {"id": "shared", "tests": ["tests/test_shared.py"], "paths": ["data/HarwellBoeing/**"]},
+    {"id": "ilp", "tests": ["tests/test_ilp_workflow.py"], "paths": ["scripts/ilp/**"]},
+    {"id": "cp", "tests": ["scripts/cp/test_cp_workflow.py"], "paths": ["scripts/cp/**", "data/HarwellBoeing/graphs/ibm32.col"]},
+    {"id": "runner", "tests": ["tests/test_experiment_runner.py"], "paths": ["tools/experiment/**", "scripts/ilp/**", "scripts/cp/**", "scripts/sat/**"]}
+  ]
+}
