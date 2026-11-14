@@ -21,8 +21,9 @@ Modern Issues in Computer Science, major assignment 2 (BTL 2). The project compa
 | Brute-force oracle and the correctness-gate graphs for any method's tests | [tests/oracle.py](tests/oracle.py) |
 | Which workflow tests a change selects | [tools/testSelection.json](tools/testSelection.json), read by [tools/selectTests.py](tools/selectTests.py). A path that no rule maps selects the full suite |
 | Run experiments: one fresh worker process per attempt, deadline kill, peak memory, and the `results/<experiment-id>/` files of the contract | [tools/experiment/](tools/experiment/), entry point [runExperiment.py](tools/experiment/runExperiment.py); the six method IDs map to solver calls in [methods.py](tools/experiment/methods.py) |
+| Write a report section | Each owner's LaTeX files in [report/sections/](report/sections/) and their own `.bib` file in [report/](report/); who writes what is in [Task.md](Task.md#report-ownership). Member 2's `report/main.tex` does not exist yet |
 
-`results/` and `report/` do not exist yet. Session scratch files belong in ignored `tmp/`.
+`results/` does not exist yet. Session scratch files belong in ignored `tmp/`.
 
 ## Commands
 
