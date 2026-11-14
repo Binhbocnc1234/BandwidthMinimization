@@ -26,11 +26,11 @@ Modern Issues in Computer Science, major assignment 2 (BTL 2). The project compa
 
 ## Commands
 
-Python 3.10 or newer is required. Run every command from the repository root. Solver dependencies are not pinned yet, because [Task.md](Task.md#shared-input-output-and-conditions) freezes one environment before the main campaign.
+Python 3.10 or newer is required. Run every command from the repository root. [requirements.txt](requirements.txt) pins the environment frozen for the main campaign.
 
 | Task | Command |
 |---|---|
-| Create the environment and install the solver and test dependencies | `uv venv .venv && uv pip install --python .venv/bin/python pytest python-sat ortools docplex cplex gurobipy` |
+| Create the environment and install the pinned solver and test dependencies | `uv venv .venv && uv pip install --python .venv/bin/python -r requirements.txt` |
 | Run the tests that the committed changes select, in a clean checkout of `HEAD`; required after the last commit of a request. When the request made several commits, add `--base <commit before the first one>` | `.venv/bin/python tools/selectTests.py` |
 | Run every workflow test, required before merging into `main` and before a campaign | `.venv/bin/python -m pytest tests scripts/cp/test_cp_workflow.py` |
 | Run the smoke experiment (3 instances, 10 s, once per method); set `GRB_LICENSE_FILE` and `CPO_EXECUTABLE` first, or those methods are recorded UNAVAILABLE | `.venv/bin/python -m tools.experiment.runExperiment --experiment-id smoke-<date> --instances ibm32 bcspwr01 bcsstk01 --repetitions 1 --time-limit 10` |

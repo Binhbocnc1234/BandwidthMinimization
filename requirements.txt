@@ -1,0 +1,21 @@
+# Frozen on 2026-11-14, after all six methods ran together in the smoke experiment (Task.md, "Shared Input, Output, and Conditions"), on Python 3.12.3.
+# The cplex wheel below is the size-limited Community Edition. AGENTS.md explains the docplex upgrade that replaces its library with CPLEX Studio 22.2.0.0.
+absl-py==2.5.1
+cplex==22.2.0.1
+docplex==2.32.264
+gurobipy==14.0.0
+immutabledict==4.3.1
+iniconfig==2.3.1
+numpy==2.5.4
+ortools==9.15.6755
+packaging==26.3
+pandas==3.1.1
+pluggy==1.7.0
+protobuf==6.33.6
+pygments==2.21.0
+pytest==9.2.0
+python-dateutil==4.0.0
+python-sat==1.9.dev22
+six==1.17.0
+typing-extensions==4.16.0
+tzdata==2026.6
