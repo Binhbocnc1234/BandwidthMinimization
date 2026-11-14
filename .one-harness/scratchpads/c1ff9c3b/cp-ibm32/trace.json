@@ -1,0 +1,62 @@
+[
+  {
+    "elapsedTime": 0.07242551699982869,
+    "bestUB": 25
+  },
+  {
+    "elapsedTime": 0.09906327600037912,
+    "bestUB": 24
+  },
+  {
+    "elapsedTime": 0.10240836899993155,
+    "bestUB": 23
+  },
+  {
+    "elapsedTime": 0.1076156560002346,
+    "bestUB": 22
+  },
+  {
+    "elapsedTime": 0.11128446499969868,
+    "bestUB": 21
+  },
+  {
+    "elapsedTime": 0.12907653399997798,
+    "bestUB": 20
+  },
+  {
+    "elapsedTime": 0.149061494000307,
+    "bestUB": 19
+  },
+  {
+    "elapsedTime": 0.15468707699983497,
+    "bestUB": 18
+  },
+  {
+    "elapsedTime": 0.21760361900032876,
+    "bestUB": 17
+  },
+  {
+    "elapsedTime": 0.227382148000288,
+    "bestUB": 16
+  },
+  {
+    "elapsedTime": 0.34944985000038287,
+    "bestUB": 15
+  },
+  {
+    "elapsedTime": 0.43298997700003383,
+    "bestUB": 14
+  },
+  {
+    "elapsedTime": 0.6794991269998718,
+    "bestUB": 13
+  },
+  {
+    "elapsedTime": 0.8635924649997833,
+    "bestUB": 12
+  },
+  {
+    "elapsedTime": 1.7951810710001155,
+    "bestUB": 11
+  }
+]

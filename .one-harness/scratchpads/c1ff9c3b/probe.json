@@ -1,0 +1,71 @@
+[
+  {
+    "solver": "ortools",
+    "python": "3.12.3",
+    "platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.39",
+    "full_benchmark_license": "NOT_VERIFIED",
+    "evidence_scope": "tiny graph only",
+    "availability": "AVAILABLE_TINY_TEST",
+    "result": {
+      "status": "OPTIMAL",
+      "bestUB": 1,
+      "labeling": [
+        1,
+        4,
+        3,
+        2
+      ],
+      "totalTime": 0.0034169540003858856,
+      "constructionTime": 0.0005098100000395789,
+      "searchTime": 0.0029071440003463067,
+      "validationTime": 5.4869997256901115e-06,
+      "lowerBound": 1,
+      "initUB": 3,
+      "trace": [
+        {
+          "elapsedTime": 0.0031714870001451345,
+          "bestUB": 2
+        },
+        {
+          "elapsedTime": 0.0033106049995694775,
+          "bestUB": 1
+        }
+      ],
+      "method": "cp_ortools",
+      "model": "cp_positions_all_different_max_distance",
+      "backend": "OR-Tools CP-SAT",
+      "backendVersion": "9.15.6755",
+      "nativeStatus": "OPTIMAL",
+      "terminationReason": "completed",
+      "incumbentOrigin": "solver",
+      "hintSubmitted": true,
+      "hintAccepted": null,
+      "numVars": 8,
+      "maxVars": 8,
+      "numConstraints": 5,
+      "modelCountScope": "source model, before backend presolve; objective excluded",
+      "maxClauses": null,
+      "threads": 1,
+      "seed": 0,
+      "deadlineOvershoot": 0
+    },
+    "log": "",
+    "packages": {
+      "ortools": "9.15.6755"
+    }
+  },
+  {
+    "solver": "cpo",
+    "python": "3.12.3",
+    "platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.39",
+    "full_benchmark_license": "NOT_VERIFIED",
+    "evidence_scope": "tiny graph only",
+    "availability": "UNAVAILABLE",
+    "error": "CpoException(\"Executable file 'cpoptimizer' does not exists\")",
+    "log": "###############################################################################\n# Solver executable file is not found !\n# Please check that:\n#  - you have installed IBM ILOG CPLEX Optimization Studio on your computer,\n#    (see https://ibmdecisionoptimization.github.io/docplex-doc/getting_started.html for details),\n#  - your system path includes a reference to the directory where the executable file 'cpoptimizer(.exe)' is located,\n#  - the context attribute 'context.solver.local.execfile' is properly set to 'cpoptimizer(.exe)',\n#  - or that it is set to an absolute path to this file.\n###############################################################################\n",
+    "packages": {
+      "docplex": "2.32.264",
+      "cplex": null
+    }
+  }
+]
