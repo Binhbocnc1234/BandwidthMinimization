@@ -1,0 +1,32 @@
+% Owner: Member 1 (Task.md, Report Ownership). Text from the SAT draft of 2026-11-14.
+
+\section{Mathematical Formulations \& SAT Encodings}
+
+\subsection{Order Encoding}
+Order Encoding utilizes boolean variables $L(u, i) = \text{True} \iff f(u) \le i$. 
+\begin{itemize}
+    \item \textbf{Boundary Condition:} $L(u, n) = \text{True}, \quad \forall u \in V$
+    \item \textbf{Monotonicity Constraints:} $\neg L(u, i) \lor L(u, i+1), \quad \forall i \in \{1, \dots, n-1\}$
+    \item \textbf{Bijection / At-Most-One (AMO):} $\neg L(u, i) \lor \neg L(v, i) \lor L(u, i-1) \lor L(v, i-1)$
+    \item \textbf{Edge Distance Constraints:} $\neg L(u, k) \lor L(v, k + UB), \quad \forall (u,v) \in E$
+\end{itemize}
+
+\subsection{Pairwise Encoding}
+Pairwise Encoding defines boolean variables $X(u, i) = \text{True} \iff f(u) = i$.
+\begin{itemize}
+    \item \textbf{Exactly One Position per Vertex:} Each vertex is assigned exactly one label.
+    \item \textbf{Exactly One Vertex per Position:} Each label is assigned to exactly one vertex.
+    \item \textbf{Edge Distance Constraints:} $\neg X(u, k) \lor \bigvee_{j = \max(1, k-UB)}^{\min(n, k+UB)} X(v, j), \quad \forall (u,v) \in E$
+\end{itemize}
+
+\section{Solving Strategies}
+
+\subsection{Repeated SAT Solver}
+At each upper bound evaluation step $UB = k$, a brand-new SAT formula is constructed and passed to the CaDiCaL solver engine from scratch.
+
+\subsection{Incremental SAT Solver}
+The solver is initialized once with base structural constraints. For each iteration testing $UB = k$, distance constraints are conditionally activated via helper literals $A_k$ (Activation Literals) in the form:
+\begin{equation}
+    (\text{Edge Clause}) \lor \neg A_k
+\end{equation}
+During solving, invoking \texttt{solver.solve(assumptions=[A\_k])} enables the reuse of learned clauses across consecutive bound searches.

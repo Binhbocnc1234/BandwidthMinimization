@@ -1,0 +1,90 @@
+%% 
+%% Copyright 2019-2020 Elsevier Ltd
+%% 
+%% This file is part of the 'CAS Bundle'.
+%% --------------------------------------
+%% 
+%% It may be distributed under the conditions of the LaTeX Project Public
+%% License, either version 1.2 of this license or (at your option) any
+%% later version.  The latest version of this license is in
+%%    http://www.latex-project.org/lppl.txt
+%% and version 1.2 or later is part of all distributions of LaTeX
+%% version 1999/12/01 or later.
+%% 
+%% The list of all files belonging to the 'CAS Bundle' is
+%% given in the file `manifest.txt'.
+%% 
+%% Template article for cas-sc documentclass for 
+%% double column output.
+
+% Owner: Member 3 (Task.md, Report Ownership). Each section lives in its owner's file under sections/; this file only includes them.
+
+\documentclass[a4paper,fleqn]{cas-sc}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{subcaption}
+\usepackage{hyperref}
+\usepackage[authoryear,longnamesfirst]{natbib}
+
+%%%Author definitions
+\def\tsc#1{\csdef{#1}{\textsc{\lowercase{#1}}\xspace}}
+\tsc{WGM}
+\tsc{QE}
+\tsc{EP}
+\tsc{PMS}
+\tsc{BEC}
+\tsc{DE}
+%%%
+
+\begin{document}
+
+\let\WriteBookmarks\relax
+\def\floatpagepagefraction{1}
+\def\textpagefraction{.001}
+
+\shorttitle{Bandwidth Minimization via SAT Solvers}
+\shortauthors{Nguyen Thanh Binh et~al.}
+
+\title [mode = title]{Exact SAT Solving for the Bandwidth Minimization Problem}
+
+\author[1]{Nguyen Thanh Binh}[role=Project Leader]
+\ead{2402@vnu.edu.vn}
+
+\author[1]{Tran Tuan Cuong}[type=editor]
+\credit{Writing - Original draft preparation}
+\ead{24021399@vnu.edu.vn}
+
+\author[1]{Cao The Manh}
+\ead{2402@vnu.edu.vn}
+
+\address[1]{Faculty of Computer Science, VNU University of Engineering and Technology (VNU-UET)}
+
+\input{sections/abstract}
+
+\begin{keywords}
+Graph Theory \sep Graph Bandwidth \sep Bandwidth Minimization Problem \sep Exact SAT Solving \sep Incremental SAT \sep CaDiCaL \sep ILP \sep CP
+\end{keywords}
+
+\maketitle
+
+\input{sections/introduction}
+\input{sections/satEncoding}
+\input{sections/ilpFormulation}
+\input{sections/experimentalSetup}
+\input{sections/satResults}
+\input{sections/conclusion}
+
+\bibliographystyle{cas-model2-names}
+\bibliography{referencesMember3}
+
+\bio{}
+% Author biography
+\endbio
+
+\end{document}

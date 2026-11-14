@@ -1,0 +1,49 @@
+% Owner: Member 1 (Task.md, Report Ownership). Text from the SAT draft of 2026-11-14.
+% These results ran on Member 1's machine, not in the main campaign; they are official by Nguyen Thanh Binh's decision (2026-11-14), which accepts the conflict with docs/ExperimentContract.md.
+
+\section{Experimental Results \& Evaluation}
+
+\subsection{Experimental Setup}
+Experiments were conducted on a CachyOS Linux system, x86\_64 CPU architecture, using PySAT bindings for the CaDiCaL 1.5.3 backend. A standard time budget of 300 seconds per execution run was enforced.
+
+\subsection{Benchmark Performance}
+
+\begin{table}[h]
+\caption{Performance comparison of the 4 configurations on graph instance $bcspwr01.col$ ($n=39, m=46$)}
+\label{tab:bcspwr01}
+\centering
+\begin{tabular}{llcccrr}
+\toprule
+\textbf{Encoding} & \textbf{Solver Strategy} & \textbf{Status} & \textbf{Proved UB} & \textbf{Verified BW} & \textbf{Max Clauses} & \textbf{Total Time (s)} \\
+\midrule
+Order & Repeated SAT & OPTIMAL & 5 & 5 & 19,416 & 50.897 \\
+Order & Incremental SAT & OPTIMAL & 5 & 5 & 18,516 & 54.580 \\
+Pairwise & Repeated SAT & OPTIMAL & 5 & 5 & 42,120 & 273.107 \\
+Pairwise & Incremental SAT & OPTIMAL & 5 & 5 & 42,120 & 273.780 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Trace Analysis}
+
+\begin{table}[h]
+\caption{Detailed trace of upper bound reduction using Order / Incremental SAT on $bcspwr01.col$}
+\label{tab:trace_bcspwr01}
+\centering
+\begin{tabular}{ccr}
+\toprule
+\textbf{Tested UB} & \textbf{SAT Result} & \textbf{Solving Time (s)} \\
+\midrule
+$37 \to 9$ & SAT & $< 0.003$ s / step \\
+$8$ & SAT & $0.1234$ s \\
+$7$ & SAT & $0.0015$ s \\
+$6$ & SAT & $0.1691$ s \\
+$5$ & SAT & $0.7230$ s \\
+$4$ & \textbf{UNSAT} & \textbf{56.0051 s} (Optimality Proved) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Discussion}
+1. \textbf{Superiority of Order Encoding:} Due to natural Unit Propagation along the chain $L(u, i) \implies L(u, i+1)$, Order Encoding prunes the decision tree effectively, outperforming Pairwise Encoding by approximately $\approx 5\times$ in execution speed.
+2. \textbf{Efficiency of Incremental SAT:} Reusing solver state and learned clauses allows Incremental SAT to maintain search stability when approaching phase transition regions near optimal bounds.

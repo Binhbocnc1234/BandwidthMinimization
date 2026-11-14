@@ -1,0 +1,6 @@
+% Owner: Member 2 (Task.md, Report Ownership); the problem definition is Member 1's. Text from the SAT draft of 2026-11-14.
+
+\section{Introduction}
+The Bandwidth Minimization Problem (BMP) aims to find a bijective labeling function $f: V \to \{1, 2, \dots, n\}$ for the vertices of an undirected graph $G = (V, E)$ such that the maximum edge stretch $B(f) = \max_{(u,v) \in E} |f(u) - f(v)|$ is minimized. 
+
+In this work, we tackle BMP by converting it into a decision problem $SAT(k)$: checking whether a valid labeling exists for a given bandwidth bound $UB = k$, and iteratively decrementing $UB$ until optimality is proved.
