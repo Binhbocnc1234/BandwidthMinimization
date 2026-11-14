@@ -16,7 +16,7 @@ Modern Issues in Computer Science, major assignment 2 (BTL 2). The project compa
 | Download the dataset and rebuild the graphs | [tools/prepare_dataset.py](tools/prepare_dataset.py) |
 | SAT solvers: order and pairwise encodings, repeated and incremental solving | [scripts/sat/](scripts/sat/), entry point `solveBMPSAT` in [SATSolverWrapper.py](scripts/sat/SATSolverWrapper.py) |
 | CP solvers: OR-Tools CP-SAT and IBM CP Optimizer | [scripts/cp/](scripts/cp/), entry point [runCP.py](scripts/cp/runCP.py) |
-| ILP solvers: one formulation on IBM CPLEX and Gurobi | [scripts/ilp/](scripts/ilp/), entry point `ILPSolver` in [ilpSolver.py](scripts/ilp/ilpSolver.py); formulation and correctness argument in [docs/ILPModel.md](docs/ILPModel.md) |
+| ILP solvers: one formulation on IBM CPLEX and Gurobi | [scripts/ilp/](scripts/ilp/), entry point `ILPSolver` in [ilpSolver.py](scripts/ilp/ilpSolver.py); formulation and correctness argument in the report section [ilpFormulation.tex](report/sections/ilpFormulation.tex) |
 | Load a `.col` graph, verify it against the manifest, check a labeling | [scripts/shared/](scripts/shared/): [graphInput.py](scripts/shared/graphInput.py) and [labeling.py](scripts/shared/labeling.py). Every method uses these; none keeps its own loader or checker |
 | Brute-force oracle and the correctness-gate graphs for any method's tests | [tests/oracle.py](tests/oracle.py) |
 | Which workflow tests a change selects | [tools/testSelection.json](tools/testSelection.json), read by [tools/selectTests.py](tools/selectTests.py). A path that no rule maps selects the full suite |

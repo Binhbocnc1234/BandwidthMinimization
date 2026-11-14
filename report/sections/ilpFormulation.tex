@@ -1,0 +1,42 @@
+% Owner: Member 3 (Nguyen Thanh Binh). Reviewer: Member 1 (Task.md, Report Ownership).
+% Canonical description of the ILP model that scripts/ilp/ilpModel.py builds for both ilp_cplex and ilp_gurobi.
+% Uses only packages that the cas-sc class loads. Notation follows the problem definition: G = (V, E), n = |V|, m = |E|, labeling f, bandwidth B(f).
+
+\section{Integer linear programming formulation}\label{sec:ilp}
+
+The ILP method minimizes the bandwidth directly. One formulation is built once and solved by two backends, IBM CPLEX and Gurobi, so that the two ILP rows of the comparison differ only in the solver.
+
+\subsection{Model}\label{sec:ilp-model}
+
+For every vertex $v \in V$ and position $k \in \{1, \ldots, n\}$, the binary variable $x_{vk}$ is 1 exactly when vertex $v$ receives position $k$. The continuous variable $p_v$ is the position of $v$, and the integer variable $B$ is the bandwidth. Let $LB$ be the common lower bound of the experiments (1 for a graph with an edge, 0 otherwise) and $UB_0$ the bandwidth of the identity labeling $f_0(v) = v$. The model is
+\begin{align}
+\min\quad & B \label{eq:ilp-objective}\\
+\text{s.t.}\quad & \sum_{k=1}^{n} x_{vk} = 1 && \forall v \in V, \label{eq:ilp-vertex}\\
+& \sum_{v \in V} x_{vk} = 1 && \forall k \in \{1, \ldots, n\}, \label{eq:ilp-position}\\
+& p_v = \sum_{k=1}^{n} k\, x_{vk} && \forall v \in V, \label{eq:ilp-link}\\
+& p_u - p_v \le B,\quad p_v - p_u \le B && \forall \{u, v\} \in E, \label{eq:ilp-edge}\\
+& x_{vk} \in \{0, 1\},\quad 1 \le p_v \le n,\quad B \in \mathbb{Z},\quad LB \le B \le UB_0. \label{eq:ilp-domains}
+\end{align}
+Constraints \eqref{eq:ilp-vertex} give every vertex one position, and constraints \eqref{eq:ilp-position} give every position one vertex. Constraints \eqref{eq:ilp-edge} linearize $B \ge |p_u - p_v|$ with two inequalities per edge. The model has $n^2 + n + 1$ variables and $3n + 2m$ linear constraints. The position variables $p_v$ keep every edge constraint at three nonzero coefficients; substituting \eqref{eq:ilp-link} into \eqref{eq:ilp-edge} instead would put $2n$ nonzero coefficients in each of the $2m$ edge constraints.
+
+\subsection{Correctness}\label{sec:ilp-correctness}
+
+The optimum of \eqref{eq:ilp-objective}--\eqref{eq:ilp-domains} equals the minimum bandwidth $\min_f B(f)$, for three reasons.
+\begin{enumerate}
+\item Constraints \eqref{eq:ilp-vertex} and \eqref{eq:ilp-position} hold exactly when $x$ is a permutation matrix. Then $f(v) = p_v$ is a bijection from $V$ onto $\{1, \ldots, n\}$, and every bijection gives such a matrix. So the feasible values of $x$ are exactly the labelings.
+\item For a fixed labeling $f$, constraints \eqref{eq:ilp-edge} hold exactly when $B \ge |f(u) - f(v)|$ for every edge. So the smallest feasible $B$ is $B(f)$. When $E$ is empty, it is $\max(LB, 0) = 0$, which matches the convention $B(f) = 0$ for an edgeless graph.
+\item $B(f)$ is an integer, so requiring $B \in \mathbb{Z}$ removes no labeling. For an optimal labeling $f^*$, $LB \le B(f^*) \le B(f_0) = UB_0$, so the bounds on $B$ remove no optimal labeling either.
+\end{enumerate}
+The variables $p_v$ need not be declared integer, because \eqref{eq:ilp-link} makes them integers whenever $x$ is integral. A backend returns $x$ integral only up to its integrality tolerance, so every $p_v$ of a returned solution is rounded to the nearest integer. The resulting labeling is then checked by the shared checker, which verifies that it is a permutation and recomputes its bandwidth. A rounded vector that fails this check ends the run with status \texttt{ERROR}; it is never reported as a solution.
+
+\subsection{Backends and optimality evidence}\label{sec:ilp-backends}
+
+Both backends receive the same model, one thread, the run's random seed, a relative and an absolute MIP gap of zero, and the remaining time budget of the run. The identity labeling $f_0$ is supplied as the MIP start. Every new incumbent that a backend reports during the search is rounded, checked, and saved at once, so a run stopped at its deadline keeps its best checked labeling.
+
+A run is reported \texttt{OPTIMAL} only when the backend's best objective bound $\beta$, rounded up as $\lceil \beta - 10^{-5} \rceil$, equals the bandwidth of the checked incumbent. The tolerance $10^{-5}$ is the default integrality tolerance of both CPLEX and Gurobi, and rounding up is valid because every feasible $B$ is an integer. A run whose backend reports optimality while the rounded bound differs from the incumbent is an \texttt{ERROR}, not an optimum. A run that reaches its time limit with a checked incumbent is \texttt{FEASIBLE}, and its rounded bound is reported as the proved lower bound.
+
+\subsection{Limitations}\label{sec:ilp-limits}
+
+The linear relaxation of this formulation is weak. Setting every $x_{vk} = 1/n$ satisfies \eqref{eq:ilp-vertex} and \eqref{eq:ilp-position}, gives every vertex the same fractional position $p_v = (n + 1)/2$, and therefore satisfies \eqref{eq:ilp-edge} with $B = 0$. As a result, the relaxation proves no lower bound above $LB$, and every optimality proof must come from branching and cutting planes. On large instances, a time-limited run is therefore expected to end \texttt{FEASIBLE} rather than \texttt{OPTIMAL}.
+
+The model has $n^2 + n + 1$ variables, which exceeds the 1{,}000-variable limit of the free CPLEX Community Edition from $n = 32$ upwards ($32^2 + 32 + 1 = 1{,}057$). All CPLEX runs therefore use the full CPLEX Optimization Studio~22.2 under an academic license.

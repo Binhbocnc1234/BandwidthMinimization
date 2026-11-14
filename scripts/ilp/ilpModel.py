@@ -1,6 +1,6 @@
 """The BMP ILP formulation, written once over a builder interface so that CPLEX and Gurobi solve the identical model.
 
-The formulation and its correctness argument are in docs/ILPModel.md.
+The formulation and its correctness argument are in report/sections/ilpFormulation.tex.
 """
 
 from collections.abc import Iterable
