@@ -26,8 +26,8 @@ The reference paper supplies the BMP definition and benchmark background. Reimpl
 | Member | Person | Main track | Shared responsibility |
 |---|---|---|---|
 | 1 | Name to be added | SAT: order encoding; optional pairwise | SAT search, bounds, and SAT experiment artifacts |
-| 2 | Name to be added | CP | Report skeleton and integration, comparison tables and charts, and presentation assembly |
-| 3 | Nguyen Thanh Binh | ILP | Shared interface, loader/checker, experiment runner, and repository integration |
+| 2 | Name to be added | CP | Report integration, comparison tables and charts, and presentation assembly |
+| 3 | Nguyen Thanh Binh | ILP | Shared interface, loader/checker, experiment runner, repository integration, and the report skeleton |
 
 ## Member 1 — SAT
 
@@ -48,7 +48,7 @@ The reference paper supplies the BMP definition and benchmark background. Reimpl
 - Implement the CP model with OR-Tools CP-SAT and IBM CPLEX CP Optimizer adapters. Preserve the distinction between the model and the solver backend in the results.
 - Add CP workflow tests covering the real model, solving, extraction, shared checking, and result export.
 - Verify backend installation and license availability before the main experiment campaign. Share unavailable backends and supporting evidence with the group.
-- Own the report skeleton `report/main.tex`: the `cas-sc` preamble, the section order, and the shared notation macros. Reconcile notation across the owners' section files, merge the owners' bibliography files, and prepare Data Availability using the repository and experiment artifacts supplied by Member 3.
+- Reconcile notation across the owners' section files, check that the owners' bibliography files merge without conflicting keys, and prepare Data Availability using the repository and experiment artifacts supplied by Member 3. Send changes to `report/main.tex` to Member 3.
 - Produce comparison tables and cnsplots charts from the checked results exported by Member 3. Have each method owner verify the interpretation of their results.
 - Assemble the presentation from each member's method material. Coordinate slide order and shared terminology without taking ownership of every method's technical explanation.
 
@@ -62,6 +62,7 @@ The reference paper supplies the BMP definition and benchmark background. Reimpl
 - Define and publish the shared graph structure, solver entry point, labeling/result format, status meanings, and timing contract before dependent implementation begins. Maintain the canonical specification and identify affected tasks when the interface changes.
 - Own the shared loader and checker in `scripts/shared/`. Validate graph inputs, retain all vertices, verify dataset checksums, independently check the position permutation, and recompute bandwidth for outputs from every method.
 - Add shared workflow tests for loading and checking, including malformed inputs and rejection of invalid labelings. Keep all methods on the same manifest and graph conversion.
+- Own the report skeleton `report/main.tex`: the `cas-sc` preamble, the title and authors, the section order, the shared notation macros, and the list of included section and bibliography files.
 - Own the experiment runner in `tools/`. Apply the shared conditions, schedule methods sequentially, enforce deadlines, collect artifacts, and export comparable results.
 - Record the environment, exact solver and dependency versions, Git revision, experiment configuration, and dataset checksums.
 - Own integration into `main`. Review cross-method interface changes and check that the required comparison matrix is complete before accepting optional extensions.
@@ -85,7 +86,7 @@ Commercial backend access is not assumed. A missing license or unusable backend 
 3. All members run the correctness gate in the experiment contract. Member 3 then runs smoke experiments and freezes the environment and configuration.
 4. Member 3 executes the main comparison campaign; each method owner investigates failures and reviews their own exported results.
 5. Add optional methods as separately named variants after the required workflows work. Regenerate affected comparisons through the shared runner.
-6. Each member writes their assigned report sections directly in the LaTeX report and supplies presentation material to Member 2. Member 2 integrates the report and assembles the presentation. All three review the final claims and contribution statement before submission.
+6. Each member writes their assigned report sections directly in the LaTeX report and supplies presentation material to Member 2. Member 3 includes the sections in `report/main.tex`, Member 2 reconciles them, and Member 2 assembles the presentation. All three review the final claims and contribution statement before submission.
 
 ## Report Ownership
 
@@ -101,9 +102,9 @@ Commercial backend access is not assumed. A missing license or unusable backend 
 | Comparison tables and charts | Member 2 | All members check against raw records |
 | Discussion and limitations | All members | Member 2 integrates |
 | Introduction, abstract, conclusion, references, Data Availability | Member 2 | All members |
-| Final report integration and formatting | Member 2 | Each method owner verifies their content |
+| Final report integration and formatting | Member 3 edits `report/main.tex`; Member 2 reconciles the sections | Each method owner verifies their content |
 
-Each primary owner writes their report parts directly in LaTeX, in their own files under `report/sections/`, and adds the works they cite to their own `.bib` file under `report/`. Only Member 2 edits `report/main.tex`, which includes the section files and the bibliography files. Why: the owner of a method knows its formulation and results best, and writing the final text directly removes a draft-to-LaTeX handoff (Nguyen Thanh Binh's decision, 2026-11-14). One file per owner keeps two members from editing the same file, so their branches merge without conflicts.
+Each primary owner writes their report parts directly in LaTeX, in their own files under `report/sections/`, and adds the works they cite to their own `.bib` file under `report/`. Only Member 3 edits `report/main.tex`, which includes the section files and the bibliography files (Nguyen Thanh Binh's decision, 2026-11-14). Why: the owner of a method knows its formulation and results best, and writing the final text directly removes a draft-to-LaTeX handoff (Nguyen Thanh Binh's decision, 2026-11-14). One file per owner keeps two members from editing the same file, so their branches merge without conflicts.
 
 The report uses the Elsevier `cas-sc` class, as required by the assignment, and cnsplots for result charts. Write the abstract and conclusion after the results are checked. The contribution statement records work actually performed, not only this planned allocation. Cite the source paper, dataset, solver backends, and software versions. Describe actual AI assistance accurately if a disclosure is included or required.
 
