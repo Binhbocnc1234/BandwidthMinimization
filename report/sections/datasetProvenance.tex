@@ -1,0 +1,24 @@
+% Member 2. Add only when Member 3 authorizes changes to report/main.tex.
+\section{Related Work and Dataset Provenance}\label{sec:dataset}
+
+Bandwidth minimization is a graph-labeling optimization problem. A
+representative heuristic study is the dual-representation simulated
+annealing approach by Torres-Jimenez et al.\ \cite{torres2015drsa}, which
+uses 113 Harwell--Boeing benchmark instances and reports improved or
+matched upper bounds. The heuristic values are not automatically
+certificates of optimality, and published execution times should not
+be compared directly to this project's experiments on different
+hardware. Our methods instead seek exact solutions and report native
+optimality evidence or a checked incumbent when the time limit expires.
+
+The graphs in this project come from the Harwell--Boeing Sparse Matrix
+Collection distributed by the NIST Matrix Market~\cite{nistmatrixmarket}.
+The collection was developed by Duff, Grimes and Lewis. The project
+commits an initial 12-instance subset rather than the full 113-instance
+benchmark of the reference study. The corresponding
+\texttt{data/HarwellBoeing/Manifest.json} records source URLs, graph
+sizes and SHA-256 checksums. When converting a sparse matrix into an
+unweighted, undirected graph, an off-diagonal nonzero gives an edge;
+self-diagonal entries and repeated undirected directions do not add
+edges, and isolated vertices are retained. All SAT, CP, and ILP runs
+use the same checked \texttt{.col} graph for a given instance.

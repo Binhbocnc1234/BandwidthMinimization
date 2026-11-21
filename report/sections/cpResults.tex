@@ -1,0 +1,16 @@
+% Owner: Member 2. Include only when Member 3 agrees on report/main.tex ordering.
+% This section is populated exclusively by tools/report/buildComparison.py from
+% checked experiment artifacts. It never invents backend performance numbers.
+\section{Constraint Programming Results}\label{sec:cp-results}
+
+The two CP backends implement the same integer-position formulation (Section~\ref{sec:cp}).
+Any difference in the rows below is a backend comparison, not a change to the
+CP mathematical model. Values are grouped by instance and backend;
+\texttt{OPT} counts reports of a proved optimum and \texttt{FEAS} counts checked
+incumbents without proof. Medians are calculated from supplied runs only.
+Detailed evidence, hardware, and the exact solver versions are recorded in
+\texttt{Config.json}, \texttt{Environment.json}, \texttt{Runs.jsonl} and the
+per-run native solver logs. Before publication, CP method owner must confirm
+that native proof claims match the logs.
+
+\IfFileExists{generated/cp_results.tex}{\input{generated/cp_results}}{\par\noindent\emph{Checked campaign artifacts are pending.}\par}

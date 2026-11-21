@@ -1,0 +1,23 @@
+% Member 2: this is a section only, NOT the integrated manuscript.
+% Member 3 should include it after the checked main campaign is finalized.
+\section{Cross-Method Comparison}\label{sec:comparison}
+
+The nine instances common to all six required backend configurations are
+used for the primary comparison. Three larger instances are omitted only
+for the two SAT configurations because of the documented memory requirement;
+CP and ILP are analyzed separately on those graphs. Missing, interrupted,
+and failed runs are kept distinct from proven optimal solutions.
+\IfFileExists{generated/comparison_table.tex}{\input{generated/comparison_table}}{\par\noindent\emph{Checked campaign artifacts are pending.}\par}
+\IfFileExists{generated/comparison_large_instances.tex}{\input{generated/comparison_large_instances}}{\par\noindent\emph{Checked campaign artifacts are pending.}\par}
+\IfFileExists{generated/comparison_figures.tex}{\input{generated/comparison_figures}}{\par\noindent\emph{Checked campaign artifacts are pending.}\par}
+
+Solver-reported optimality is accepted for presentation only when the
+reconstructed labeling passes the shared checker and its reported certified
+lower bound agrees with the objective. Independent examination of native
+logs and proof claims remains the responsibility of the method owners.
+Proof-time medians use only instance--repetition pairs where all six methods
+reported a verified optimum, so unmatched timeout runs cannot silently
+bias a speed ranking. The charts, generated with 
+the \texttt{cnsplots} library~\cite{cnsplots}, distinguish solution quality, proof
+counts, run time, and reported peak RSS memory.
+\IfFileExists{generated/comparison_summary.tex}{\input{generated/comparison_summary}}{\par\noindent\emph{Checked campaign artifacts are pending.}\par}

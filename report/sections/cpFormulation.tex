@@ -1,0 +1,64 @@
+% Owner: Member 2 (CP). Uses the shared notation of docs/Problem.md and report/sections/ilpFormulation.tex.
+\section{Constraint Programming Formulation}\label{sec:cp}
+
+\subsection{Variables and Constraints}\label{sec:cp-model}
+Let $G=(V,E)$ be the undirected input graph, $n=|V|$, $m=|E|$, and
+$f:V\rightarrow\{1,\ldots,n\}$ a vertex-to-position labeling.
+The bandwidth is $B(f)=\max_{\{u,v\}\in E}|f(u)-f(v)|$, with $B(f)=0$
+when $E=\varnothing$. Let $UB_0=B(f_0)$ for $f_0(v)=v$.
+We use integer position variables $p_v\in\{1,\ldots,n\}$, distance
+variables $d_{uv}\in\{0,\ldots,n-1\}$, and a bandwidth variable
+$B\in\{0,\ldots,UB_0\}$. The model is:
+\begin{align}
+\min\quad & B, \label{eq:cp-objective}\\
+\text{s.t.}\quad & \operatorname{AllDifferent}(p_v:v\in V),\label{eq:cp-alldiff}\\
+&d_{uv}=|p_u-p_v| &&\forall\{u,v\}\in E,\label{eq:cp-distance}\\
+&B=\max_{\{u,v\}\in E}d_{uv} && E\ne\varnothing,\label{eq:cp-max}\\
+&B=0 && E=\varnothing.\label{eq:cp-empty}
+\end{align}
+The source model has $n+m+1$ integer variables and one global
+\texttt{AllDifferent} constraint, $m$ absolute-distance equalities,
+and one bandwidth equality. These are \emph{source-model} counts;
+each backend may introduce additional constraints during transformation.
+
+\subsection{Correctness}\label{sec:cp-correctness}
+Constraint~\eqref{eq:cp-alldiff} assigns distinct values from a
+size-$n$ domain to $n$ vertices, so the $p_v$ form a permutation of
+$\{1,\ldots,n\}$, and every permutation satisfies this constraint.
+Constraints~\eqref{eq:cp-distance}--\eqref{eq:cp-empty} force $B$
+to equal the bandwidth of that permutation, including the edgeless
+case. Conversely, every valid labeling defines a feasible assignment
+with the same objective. Since $UB_0$ is attained by the identity
+labeling, the bound $B\le UB_0$ cannot eliminate an optimal solution.
+Hence minimizing $B$ in this model is equivalent to the graph BMP.
+
+\subsection{Implementations and Solution Validation}\label{sec:cp-backends}
+\texttt{scripts/cp/cpSolver.py} implements the same formulation for
+\texttt{cp\_ortools} (OR-Tools CP-SAT) and \texttt{cp\_cpo} (IBM CPLEX
+CP Optimizer); these are two \emph{backends}, not two CP formulations.
+OR-Tools uses \texttt{AddAllDifferent}, \texttt{AddAbsEquality}, and
+\texttt{AddMaxEquality}. IBM CP Optimizer uses \texttt{all\_diff},
+\texttt{abs}, and \texttt{max}. The identity assignment is provided as
+a hint/starting point and is also retained as the checked initial
+incumbent. Each run uses one worker, a declared random seed, and the
+time remaining after model construction.
+
+On a new incumbent the code extracts $[p_1,\ldots,p_n]$; the shared
+checker independently verifies the permutation and recomputes the
+bandwidth. A failed check is an error, not a feasible result.
+\texttt{OPTIMAL} requires native proof of optimality and a matching
+certified objective bound; an initialized run that reaches its deadline
+without proof is \texttt{FEASIBLE}. The model does not infer UNSAT
+from interruption. As with the ILP formulation, a runtime comparison
+must specify which backend was used.
+
+\subsection{Verification Scope and Limitations}\label{sec:cp-validation}
+The repository contains CP workflow tests on small graphs (including
+paths, cycles, complete, disconnected, and edgeless graphs), an
+independent brute-force oracle, and JSON output checks.
+\texttt{scripts/cp/checkSolvers.py} checks whether each backend solves
+a four-vertex instance with independently known optimum. Passing the
+small probe establishes only limited functional availability; it does
+\emph{not} demonstrate that a commercial license permits the full
+benchmark campaign. Record the large-instance licensing check and
+actual solver versions in the campaign's \texttt{Environment.json}.
